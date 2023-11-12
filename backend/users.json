@@ -1,0 +1,16 @@
+{
+	"test": {
+		"password": "test",
+		"fullname": "Test Hesabı",
+		"solved": [[], [], [], [], []],
+		"intime": [[], [], [], [], []],
+		"show": true
+	},
+	"cahid": {
+		"password": "cenescenes",
+		"fullname": "Cahid Enes Keleş",
+		"solved": [[], [], [], [], []],
+		"intime": [[], [], [], [], []],
+		"show": false
+	}
+}

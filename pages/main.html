@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+			background-color: #{background_color};
+        }
+
+        .progress-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+			margin: 30px;
+			width: 3000px;
+        }
+
+		.progress-button {
+			width: 60vw;
+            padding: 30px;
+            text-align: center;
+            font-size: 30px;
+			color: #{text_color};
+			font-weight: bold;
+			border: 5px solid #{progress_bar_fill_color}; /* Add a border */
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 50px; /* Adjust the margin as needed */
+			margin-left: 5vw;
+			margin-right: 2vw;
+		}
+
+		.progress-button-container {
+			display: flex;
+            align-items: center;
+            margin-bottom: 5px; /* Adjust the margin as needed */
+        }
+
+		.label {
+            margin-left: 10px; /* Adjust the margin as needed */
+			margin-bottom: 50px;
+			font-size: 30px;
+			font-family: 'Arial';
+        }
+
+		.scoreboard {
+			width: 100px;
+			height: 700px;
+			margin: 70px;
+			margin-left: 0;
+			border: 5px solid #{progress_bar_fill_color}; /* Add a border */
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+			background-color: #{border_color};
+			color: #fff;
+			font-size: 50px;
+			font-weight: bold;
+		}
+    </style>
+</head>
+<body>
+
+<div class="progress-bar">
+<div>

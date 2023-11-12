@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+  </head>
+  <body>
+    <form onsubmit="signIn()">
+      <h1>Login</h1>
+      <input type="text" placeholder="username" name="username" />
+      <input type="password" placeholder="password" name="password" />
+      <input type="submit" placeholder="Sign In" />
+      <h1 class="fail">Wrong Credentials</h1>
+    </form>
+    <script>
+function signIn() {
+  event.preventDefault();
+  let ev = event;
+  fetch("http://localhost:8080/login", {
+    method: "POST",
+    body: JSON.stringify({
+      username: event.target[0].value,
+      password: event.target[1].value,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => res.text())
+    .then((token) => {
+      localStorage.setItem("token", JSON.parse(token));
+      localStorage.setItem("user", ev.target[0].value);
+      //window.location.replace("../pages/main.html");
+      let a = document.createElement("a");
+      a.href = "/main";
+      document.body.appendChild(a);
+      a.click();
+    })
+    .catch((e) => {
+      document.getElementsByClassName("fail")[0].style.display = "block";
+      console.log(e);
+    });
+}    
+    </script>
+  
+  </body>
+</html>

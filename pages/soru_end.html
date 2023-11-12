@@ -1,0 +1,88 @@
+<div id="input-form">
+    <textarea id="user-input" rows="10" placeholder="Kodunuzu buraya yapıştırın"></textarea>
+    <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+</div>
+
+
+
+<div hidden id="patladi">
+	<div class="sample2">
+		<div class="sample-input">
+			<strong>Patlatan Girdi:</strong>
+			<pre id="patlataninput" class="long">{patlataninput}</pre>
+		</div>
+	</div>
+	<div class="sample">
+		<div class="sample-input">
+			<strong>Senin Kodun Çıktısı:</strong>
+			<pre id="patlatanoutput">{seninkod}</pre>
+		</div>
+		<div class="sample-output">
+			<strong>Beklenen Çıktı:</strong>
+			<pre id="patlatanexpected">{beklenen}</pre>
+		</div>
+	</div>
+</div>
+
+<script>
+
+	 async function submitAnswer() {
+
+		var button = document.getElementById('submit-btn')
+		button.textContent = "Test ediliyor..."
+		button.onclick = "";
+
+        const userInput = document.getElementById("user-input").value;
+
+        try {
+			const response = await fetch('/hafta/{week}/{question}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any additional headers if needed
+                },
+                body: JSON.stringify({ input: userInput }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+			console.log(result);
+
+			if (result.result == "success") {
+				button.style.backgroundColor = "#{color3}"
+				button.textContent = "Başarılı!"
+				button.onclick = "";
+			} else {
+				button.style.backgroundColor = "#c62828"
+				button.textContent = result.result;
+				button.onclick = "";
+
+				document.getElementById("patlataninput").textContent = result.input;
+				document.getElementById("patlatanoutput").textContent = result.output;
+				document.getElementById("patlatanexpected").textContent = result.expected;
+
+				document.getElementById("patladi").hidden = false;
+				document.getElementById("patladi").scrollIntoView({behavior: "smooth"});
+				setTimeout(resetButton, 5000);
+
+			}
+
+            displayResult(success, userInput, output, expected);
+		} catch {}
+
+	function resetButton() {
+		button.style.backgroundColor = "#{border_color}"
+		button.textContent = "Submit"
+		button.setAttribute("onclick", "submitAnswer()");
+	}
+
+    }
+</script>
+
+</body>
+</html>
+
