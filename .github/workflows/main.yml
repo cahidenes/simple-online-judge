@@ -16,4 +16,4 @@ jobs:
           host: ${{ secrets.IP }}
           username: root
           key: ${{ secrets.SSH_KEY }}
-          script: "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh &"
+          script: "cd isar; git pull;"
