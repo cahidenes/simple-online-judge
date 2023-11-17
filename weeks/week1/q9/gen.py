@@ -1,2 +1,4 @@
 import random
-print(random.choice('abcdefg'))
+print(random.randint(0, 100))
+print(random.randint(0, 100))
+print(random.randint(20, 80))

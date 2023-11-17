@@ -1,2 +1,2 @@
 import random
-print(random.choice('abcdefg'))
+print(round(random.random(), 2))
