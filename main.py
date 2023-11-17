@@ -26,18 +26,23 @@ with open('backend/users.json') as f:
     users = json.load(f)
 
 def handle_user(request: Request):
-    user = request.cookies['username']
-    pw = request.cookies['password']
-    error = ''
-    if user not in users:
-        error = 'İsim hatalı'
-    elif users[user]['password'] != pw:
-        error = 'Şifre hatalı'
-    if error:
+    try:
+        user = request.cookies['username']
+        pw = request.cookies['password']
+        error = ''
+        if user not in users:
+            error = 'İsim hatalı'
+        elif users[user]['password'] != pw:
+            error = 'Şifre hatalı'
+        if error:
+            file = open('pages/login.html').read()
+            index = file.find('</form>')
+            file = file[:index] + open('pages/wrong.html').read().format(error) + file[index:]
+            return HTMLResponse(content=file)
+    except:
         file = open('pages/login.html').read()
-        index = file.find('</form>')
-        file = file[:index] + open('pages/wrong.html').read().format(error) + file[index:]
         return HTMLResponse(content=file)
+
 
 
 @app.get('/')
