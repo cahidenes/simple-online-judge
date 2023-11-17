@@ -10,8 +10,10 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-      - name: upload
-        run: | 
-          cat "${{ secrets.SSH_KEY }}" > /tmp/tempkey
-          chmod 600 /tmp/tempkey
-          ssh -i /tmp/tempkey root@${{ secrets.IP }} "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.IP }}
+          username: root
+          key: ${{ secrets.KEY }}
+          script: "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
