@@ -1,0 +1,14 @@
+name: UploadServer
+on:
+  push:
+    branches:
+      - 'main'
+env:
+  ssh_key: ${{ secrets.SSH_KEY }}
+  ip: ${{ secrets.IP }}
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: upload
+        run: ssh -i ${{ secrets.SSH_KEY }} root@${{ secrets.IP }} "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
