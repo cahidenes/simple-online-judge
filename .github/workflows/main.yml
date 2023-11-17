@@ -1,0 +1,19 @@
+name: UploadServer
+on:
+  push:
+    branches:
+      - 'main'
+env:
+  ssh_key: ${{ secrets.SSH_KEY }}
+  ip: ${{ secrets.IP }}
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.IP }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          script: "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
