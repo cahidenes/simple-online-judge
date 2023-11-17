@@ -11,4 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: upload
-        run: ssh -i ${{ secrets.SSH_KEY }} root@${{ secrets.IP }} "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
+        run: | 
+          cat ${{ secrets.SSH_KEY }} > /tmp/tempkey
+          chmod 600 /tmp/tempkey
+          ssh -i /tmp/tempkey root@${{ secrets.IP }} "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
