@@ -1,4 +1,3 @@
-a = int(input())
-b = int(input())
+isim = input()
 
-print(a-b)
+print('Merhaba', isim)

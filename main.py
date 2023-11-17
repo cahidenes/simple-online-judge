@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEK = 3
+WEEK = 1
 
 app = FastAPI()
 
