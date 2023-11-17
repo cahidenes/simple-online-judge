@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: upload
         run: | 
-          cat ${{ secrets.SSH_KEY }} > /tmp/tempkey
+          cat "${{ secrets.SSH_KEY }}" > /tmp/tempkey
           chmod 600 /tmp/tempkey
           ssh -i /tmp/tempkey root@${{ secrets.IP }} "cd isar; sudo pkill 'uvicorn'; git pull; ./deploy.sh"
