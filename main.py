@@ -59,7 +59,7 @@ def root(request: Request):
         item = item.replace('{percent}', str(solved*10))
         item = item.replace('{puan}', str(intime+solved))
         item = item.replace('{hafta}', str(week+1))
-        if week >= WEEK:
+        if week == WEEK:
             item = item.replace('000', '888')
         else:
             item = item.replace('disabled ', '')
@@ -197,7 +197,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
 
     if question not in users[user]['solved'][week-1]:
         users[user]['solved'][week-1].append(question)
-    if (datetime.datetime.now() < datetime.datetime(2023, 11, 18, 14, 0, 0, 0) + datetime.timedelta(days=7*week)) and question < 5:
+    if (datetime.datetime.now() < datetime.datetime(2023, 11, 18, 14, 0, 0, 0) + datetime.timedelta(days=7*(week-1))) and question < 5:
         if question not in users[user]['intime'][week-1]:
             users[user]['intime'][week-1].append(question)
     usersjson = open('backend/users.json', 'w')
