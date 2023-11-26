@@ -59,7 +59,7 @@ def root(request: Request):
         item = item.replace('{percent}', str(solved*10))
         item = item.replace('{puan}', str(intime+solved))
         item = item.replace('{hafta}', str(week+1))
-        if week == WEEK:
+        if week != WEEK-1:
             item = item.replace('000', '888')
         else:
             item = item.replace('disabled ', '')
