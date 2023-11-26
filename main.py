@@ -195,6 +195,13 @@ def solve(request: Request, week: int, question: int, solution: Solution):
                     'expected': open(f'codes/{user}/tmpexpected').read()
                     }
 
+    codefile = f'codes/{user}/week{week}/q{question}/'
+    os.system('mkdir -p ' + codefile)
+    codefile += 'accepted.py'
+    f = open(codefile, 'w')
+    f.write(code)
+    f.close()
+
     if question not in users[user]['solved'][week-1]:
         users[user]['solved'][week-1].append(question)
     if (datetime.datetime.now() < datetime.datetime(2023, 11, 18, 14, 0, 0, 0) + datetime.timedelta(days=7*(week-1))) and question < 5:
@@ -232,7 +239,10 @@ def scoreboard(request: Request):
         for week in range(WEEK):
             for q in range(10):
                 if q in users[adam]['solved'][week]:
-                    part += '<td class="solved"></td>'
+                    if q in users[user]['solved'][week]:
+                        part += f'<td class="solved"><a href="bak/{adam}/{week+1}/{q}">M</a></td>'
+                    else:
+                        part += '<td class="solved"></td>'
                     puan += 1
                 else:
                     part += '<td></td>'
@@ -252,6 +262,28 @@ def scoreboard(request: Request):
     page += '</tbody> </table> </body> </html>'
 
     return HTMLResponse(content=page)
+
+@app.get('/bak/{ouser}/{week}/{question}')
+def bak(request: Request, ouser: str, week: int, question: int):
+    if handle_user(request):
+        return handle_user(request)
+    user = request.cookies['username']
+    try:
+        if question not in users[user]['solved'][week-1]:
+            return "Illegal"
+        page = open('pages/bak.html').read()
+        page = page.replace('{color1}', color1)
+        page = page.replace('{color2}', color2)
+        page = page.replace('{color3}', color3)
+        page = page.replace('{color33}', color33)
+        page = page.replace('{color4}', color4)
+        codefile = f'codes/{ouser}/week{week}/q{question}/accepted.py'
+        page = page.replace('{code}', open(codefile).read().replace('\n', '<br>').replace(' ', '&nbsp;').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;'))
+
+    except Exception as e:
+        return str(e)
+    return HTMLResponse(content=page)
+
 
 
 
