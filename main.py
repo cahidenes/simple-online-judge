@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEK = 2
+WEEK = 3
 
 app = FastAPI()
 
@@ -170,30 +170,53 @@ def solve(request: Request, week: int, question: int, solution: Solution):
 
     path = f'weeks/week{week}/q{question}/'
 
-    for _ in range(100):
-        os.system(f'python3 {path}gen.py > codes/{user}/tmpinput')
-        result = os.system(f'timeout 1s python3 {codefile} < codes/{user}/tmpinput > codes/{user}/tmpoutput 2> codes/{user}/tmperror')
-        if result == 31744:
-            return {
-                    'result': 'Patladı :(',
-                    'input': open(f'codes/{user}/tmpinput').read(),
-                    'output': 'Ohoo kodun çalışması çok uzun sürdü.'
-                    }
-        elif result:
-            return {
-                    'result': 'Patladı :(',
-                    'input': open(f'codes/{user}/tmpinput').read(),
-                    'output': open(f'codes/{user}/tmperror').read(),
-                    }
-        os.system(f'python3 {path}sol.py < codes/{user}/tmpinput > codes/{user}/tmpexpected')
-        result = os.system(f'diff -w codes/{user}/tmpoutput codes/{user}/tmpexpected')
+    if os.path.exists(f'{path}sol.py'):
+        for _ in range(100):
+            os.system(f'python3 {path}gen.py > codes/{user}/tmpinput')
+            result = os.system(f'timeout 1s python3 {codefile} < codes/{user}/tmpinput > codes/{user}/tmpoutput 2> codes/{user}/tmperror')
+            if result == 31744:
+                return {
+                        'result': 'Patladı :(',
+                        'input': open(f'codes/{user}/tmpinput').read(),
+                        'output': 'Ohoo kodun çalışması çok uzun sürdü.'
+                        }
+            elif result:
+                return {
+                        'result': 'Patladı :(',
+                        'input': open(f'codes/{user}/tmpinput').read(),
+                        'output': open(f'codes/{user}/tmperror').read(),
+                        }
+            os.system(f'python3 {path}sol.py < codes/{user}/tmpinput > codes/{user}/tmpexpected')
+            result = os.system(f'diff -w codes/{user}/tmpoutput codes/{user}/tmpexpected')
+            if result:
+                return {
+                        'result': 'Patladı :(',
+                        'input': open(f'codes/{user}/tmpinput').read(),
+                        'output': open(f'codes/{user}/tmpoutput').read(),
+                        'expected': open(f'codes/{user}/tmpexpected').read()
+                        }
+    else:
+        os.system(f'cp {codefile} codes/{user}/tmpcode.py')
+        os.system(f'cp {path}check.py codes/{user}/tmpcheck.py')
+        os.system(f'rm codes/{user}/tmperror')
+        result = os.system(f'cd codes/{user}; timeout 1s python3 tmpcheck.py > tmpexpected 2> tmperror')
         if result:
-            return {
-                    'result': 'Patladı :(',
-                    'input': open(f'codes/{user}/tmpinput').read(),
-                    'output': open(f'codes/{user}/tmpoutput').read(),
-                    'expected': open(f'codes/{user}/tmpexpected').read()
-                    }
+            if not os.system(f'[ -s codes/{user}/tmperror ]'):
+                return {
+                        'result': 'Patladı :(',
+                        'input': open(f'codes/{user}/tmpinput').read(),
+                        'output': open(f'codes/{user}/tmperror').read(),
+                        'expected': ''
+                        }
+            else:
+                return {
+                        'result': 'Patladı :(',
+                        'input': open(f'codes/{user}/tmpinput').read(),
+                        'output': open(f'codes/{user}/tmpoutput').read(),
+                        'expected': open(f'codes/{user}/tmpexpected').read()
+                        }
+
+
 
     codefile = f'codes/{user}/week{week}/q{question}/'
     os.system('mkdir -p ' + codefile)

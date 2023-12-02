@@ -1,2 +1,2 @@
 import random
-print(random.choice('abcdefg'))
+print(random.randint(5, 1000))
