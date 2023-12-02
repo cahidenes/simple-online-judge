@@ -160,6 +160,10 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     code = solution.input;
     if 'import ' in code:
         return {'result': 'import yasak >:('}
+    if 'eval(' in code:
+        return {'result': 'eval yasak >:('}
+    if 'exec(' in code:
+        return {'result': 'exec yasak >:('}
 
     codefile = f'codes/{user}/week{week}/q{question}/'
     os.system('mkdir -p ' + codefile)
@@ -170,7 +174,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
 
     path = f'weeks/week{week}/q{question}/'
 
-    if os.path.exists(f'{path}sol.py'):
+    if not os.path.exists(f'{path}check.py'):
         for _ in range(100):
             os.system(f'python3 {path}gen.py > codes/{user}/tmpinput')
             result = os.system(f'timeout 1s python3 {codefile} < codes/{user}/tmpinput > codes/{user}/tmpoutput 2> codes/{user}/tmperror')
@@ -245,7 +249,10 @@ def scoreboard(request: Request):
     for week in range(max(WEEKS)):
         for q in range(10):
             qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
-            page += f'<th><div class="ver">{qname}</div></th>'
+            if q in users[user]['solved'][week] or user == 'cahid':
+                page += f'<th><div class="ver"><a href="bak/cahid/{week+1}/{q}">{qname}</a></div></th>'
+            else:
+                page += f'<th><div class="ver">{qname}</div></th>'
     page += f'<th><div class="ver">Toplam</div></th>'
     page += f'<td class="empty-column"></td>'
 
@@ -301,12 +308,11 @@ def bak(request: Request, ouser: str, week: int, question: int):
         page = page.replace('{color33}', color33)
         page = page.replace('{color4}', color4)
         codefile = f'codes/{ouser}/week{week}/q{question}/accepted.py'
+        if ouser == 'cahid':
+            codefile = f'weeks/week{week}/q{question}/sol.py'
         page = page.replace('{code}', open(codefile).read().replace('\n', '<br>').replace(' ', '&nbsp;').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;'))
 
     except Exception as e:
         return str(e)
     return HTMLResponse(content=page)
-
-
-
 
