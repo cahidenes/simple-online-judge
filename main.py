@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEK = 3
+WEEKS = [2, 3]
 
 app = FastAPI()
 
@@ -59,7 +59,7 @@ def root(request: Request):
         item = item.replace('{percent}', str(solved*10))
         item = item.replace('{puan}', str(intime+solved))
         item = item.replace('{hafta}', str(week+1))
-        if week != WEEK-1 and user != 'cahid':
+        if week+1 not in WEEKS and user != 'cahid':
             item = item.replace('000', '888')
         else:
             item = item.replace('disabled ', '')
@@ -94,7 +94,7 @@ def getWeek(request: Request, week: int):
     if handle_user(request):
         return handle_user(request)
     user = request.cookies['username']
-    if not (0 < week <= WEEK):
+    if not (0 < week <= max(WEEKS)):
         return RedirectResponse("/")
 
     page = open('pages/week.html').read()
@@ -118,7 +118,7 @@ def getQuestion(request: Request, week: int, question: int):
         return handle_user(request)
     user = request.cookies['username']
 
-    if not (0 < week <= WEEK) or not (0 <= question < 10):
+    if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
         return RedirectResponse("/")
 
     page = open('pages/soru.html').read()
@@ -154,7 +154,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     if handle_user(request):
         return handle_user(request)
     user = request.cookies['username']
-    if not (0 < week <= WEEK) or not (0 <= question < 10):
+    if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
         return {'result': 'illegal'}
 
     code = solution.input;
@@ -242,7 +242,7 @@ def scoreboard(request: Request):
     user = request.cookies['username']
     page = open('pages/scoreboard.html').read()
 
-    for week in range(WEEK):
+    for week in range(max(WEEKS)):
         for q in range(10):
             qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
             page += f'<th><div class="ver">{qname}</div></th>'
@@ -259,7 +259,7 @@ def scoreboard(request: Request):
         isim = users[adam]['fullname']
         part = f" <tr> <td><strong>{isim}</strong></td> "
         puan = 0
-        for week in range(WEEK):
+        for week in range(max(WEEKS)):
             for q in range(10):
                 if q in users[adam]['solved'][week]:
                     if q in users[user]['solved'][week] or user == 'cahid':
@@ -306,7 +306,6 @@ def bak(request: Request, ouser: str, week: int, question: int):
     except Exception as e:
         return str(e)
     return HTMLResponse(content=page)
-
 
 
 
