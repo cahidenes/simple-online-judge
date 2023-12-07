@@ -31,8 +31,8 @@ for i in range(100):
     if random.randint(0, 1):
         d['bosluk'] = random.choice([' ', '.', '-', '_'])
     open('tmpinput', 'w').write(ayar(**d))
-    open('tmpoutput', 'w').write(kutu(**d))
     open('tmpexpected', 'w').write(mykutu(**d))
+    open('tmpoutput', 'w').write(kutu(**d))
     if kutu(**d).strip() != mykutu(**d).strip():
         exit(1)
 exit(0)
