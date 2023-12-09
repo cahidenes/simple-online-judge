@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [3]
+WEEKS = [3, 4]
 
 app = FastAPI()
 
@@ -158,8 +158,8 @@ def solve(request: Request, week: int, question: int, solution: Solution):
         return {'result': 'illegal'}
 
     code = solution.input;
-    if 'import ' in code:
-        return {'result': 'import yasak >:('}
+    # if 'import ' in code:
+    #     return {'result': 'import yasak >:('}
     if 'eval(' in code:
         return {'result': 'eval yasak >:('}
     if 'exec(' in code:

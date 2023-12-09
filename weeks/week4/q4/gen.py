@@ -1,2 +1,1 @@
-import random
-print(random.choice('abcdefg'))
+print("Bu soruda input output yoktur")
