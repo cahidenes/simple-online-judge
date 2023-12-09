@@ -156,6 +156,8 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     user = request.cookies['username']
     if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
         return {'result': 'illegal'}
+    if week == 4 and question > 4:
+        return {'result': 'illegal'}
 
     code = solution.input;
     # if 'import ' in code:
