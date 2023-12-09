@@ -120,6 +120,9 @@ def getQuestion(request: Request, week: int, question: int):
 
     if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
         return RedirectResponse("/")
+    if week  == 4 and question > 4:
+        return RedirectResponse("/hafta/"+str(week))
+
 
     page = open('pages/soru.html').read()
 
