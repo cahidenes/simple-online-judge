@@ -1,1 +1,2 @@
-print(input())
+import pyperclip
+pyperclip.copy(pyperclip.paste()+'!')
