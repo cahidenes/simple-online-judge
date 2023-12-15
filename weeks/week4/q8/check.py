@@ -5,7 +5,7 @@ text = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
 open('tmpinput', 'w').write(text)
 open('tmpexpected', 'w').write(text+'!')
 
-pyperclip.copy(text)
+# pyperclip.copy(text)
 import tmpcode
 try:
     output = pyperclip.paste()
