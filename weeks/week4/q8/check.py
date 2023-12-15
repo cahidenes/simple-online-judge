@@ -7,7 +7,10 @@ open('tmpexpected', 'w').write(text+'!')
 
 pyperclip.copy(text)
 import tmpcode
-output = pyperclip.paste()
+try:
+    output = pyperclip.paste()
+except pyperclip.PyperclipException:
+    exit(0)
 open('tmpoutput', 'w').write(output)
 if output == text+'!':
     exit(0)
