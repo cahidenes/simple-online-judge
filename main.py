@@ -166,6 +166,15 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     if 'exec(' in code:
         return {'result': 'exec yasak >:('}
 
+    with open(f'codes/{user}/tmpinput', 'w') as f:
+        f.write()
+    with open(f'codes/{user}/tmpoutput', 'w') as f:
+        f.write()
+    with open(f'codes/{user}/tmperror', 'w') as f:
+        f.write()
+    with open(f'codes/{user}/tmpexpected', 'w') as f:
+        f.write()
+
     codefile = f'codes/{user}/week{week}/q{question}/'
     os.system('mkdir -p ' + codefile)
     codefile += str(datetime.datetime.now()).replace(' ', '-')
