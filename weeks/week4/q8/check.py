@@ -6,9 +6,9 @@ open('tmpinput', 'w').write(text)
 open('tmpexpected', 'w').write(text+'!')
 
 # pyperclip.copy(text)
-import tmpcode
 try:
-    output = pyperclip.paste()
+    import tmpcode
+    # output = pyperclip.paste()
 except pyperclip.PyperclipException:
     exit(0)
 open('tmpoutput', 'w').write(output)
