@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [4, 5]
+WEEKS = [6]
 
 app = FastAPI()
 
@@ -52,7 +52,7 @@ def root(request: Request):
     user = request.cookies['username']
     page = open('pages/main.html').read()
 
-    for week in range(5):
+    for week in range(6):
         item = open('pages/main_item.html').read()
         solved = len(users[user]['solved'][week])
         intime = len(users[user]['intime'][week])
@@ -66,7 +66,6 @@ def root(request: Request):
         page += item
 
     page += open('pages/main_end.html').read()
-
 
 
     page = page.replace('{background_color}', color1)
@@ -94,10 +93,24 @@ def getWeek(request: Request, week: int):
     if handle_user(request):
         return handle_user(request)
     user = request.cookies['username']
+
+    if len(users[user]['solved']) == 5:
+        users[user]['solved'].append([])
+        users[user]['intime'].append([])
+
     if not (0 < week <= max(WEEKS)):
         return RedirectResponse("/")
 
-    page = open('pages/week.html').read()
+    if week == 6:
+        page = open('pages/final.html').read()
+    else:
+        page = open('pages/week.html').read()
+
+    for q in range(10):
+        page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
+        page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
+
+    page = page.replace(f'{{q10}}', color3 if users[user]['golf'] >= 10 else color2)
 
     page = page.replace('{background_color}', color1)
     page = page.replace('{progress_bar_empty_color}', color2)
@@ -106,9 +119,6 @@ def getWeek(request: Request, week: int):
     page = page.replace('{text_color}', '000')
     page = page.replace('{hafta}', str(week))
 
-    for q in range(10):
-        page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
-        page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
 
     return HTMLResponse(content=page)
 
@@ -118,22 +128,29 @@ def getQuestion(request: Request, week: int, question: int):
         return handle_user(request)
     user = request.cookies['username']
 
-    if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
+    if not (0 < week <= max(WEEKS)) or not (0 <= question <= 10):
         return RedirectResponse("/")
+    if week == 6 and 4 < question < 10:
+        page = open('pages/sifrebul.html').read()
+        page = page.replace('{kod}', open(f'weeks/week{week}/q{question}/kod.py').read())
+        page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
+    elif week == 6 and question == 10:
+        page = open('pages/codegolf.html').read()
+        page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
+        page = page.replace('{puan}', str(users[user]['golf']))
+    else:
+        page = open('pages/soru.html').read()
 
+        for i in range(10):
+            if f'in{i}' in os.listdir(f'weeks/week{week}/q{question}'):
+                if f'out{i}' not in os.listdir(f'weeks/week{week}/q{question}'):
+                    os.system(f'python3 weeks/week{week}/q{question}/sol.py < weeks/week{week}/q{question}/in{i} > weeks/week{week}/q{question}/out{i}')
+                sample = open('pages/soru_item.html').read()
+                sample = sample.replace('{sampleinput}', open(f'weeks/week{week}/q{question}/in{i}').read())
+                sample = sample.replace('{sampleoutput}', open(f'weeks/week{week}/q{question}/out{i}').read())
+                page += sample
 
-    page = open('pages/soru.html').read()
-
-    for i in range(10):
-        if f'in{i}' in os.listdir(f'weeks/week{week}/q{question}'):
-            if f'out{i}' not in os.listdir(f'weeks/week{week}/q{question}'):
-                os.system(f'python3 weeks/week{week}/q{question}/sol.py < weeks/week{week}/q{question}/in{i} > weeks/week{week}/q{question}/out{i}')
-            sample = open('pages/soru_item.html').read()
-            sample = sample.replace('{sampleinput}', open(f'weeks/week{week}/q{question}/in{i}').read())
-            sample = sample.replace('{sampleoutput}', open(f'weeks/week{week}/q{question}/out{i}').read())
-            page += sample
-
-    page += open('pages/soru_end.html').read()
+        page += open('pages/soru_end.html').read()
 
     page = page.replace('{statement}', open(f'weeks/week{week}/q{question}/q.html').read())
     page = page.replace('{qname}', open(f'weeks/week{week}/q{question}/name.txt').read())
@@ -155,7 +172,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     if handle_user(request):
         return handle_user(request)
     user = request.cookies['username']
-    if not (0 < week <= max(WEEKS)) or not (0 <= question < 10):
+    if not (0 < week <= max(WEEKS)) or not (0 <= question <= 10):
         return {'result': 'illegal'}
 
     code = solution.input;
@@ -184,7 +201,25 @@ def solve(request: Request, week: int, question: int, solution: Solution):
 
     path = f'weeks/week{week}/q{question}/'
 
-    if not os.path.exists(f'{path}check.py'):
+    if week == 6 and 4 < question < 10:
+        correct = open(f'{path}sifre').read()
+        if correct.strip() != code.strip():
+            return {'result': 'Maalesef'}
+    elif week == 6 and question == 10:
+        correct = open(f'{path}cikti').read()
+        result = os.system(f'timeout 1s python3 {codefile} >codes/{user}/tmpoutput 2> codes/{user}/tmperror')
+        if result:
+            return {'result': 'Maalesef'}
+        output = open(f'codes/{user}/tmpoutput').read()
+        if correct.strip() != output.strip():
+            return {'result': 'Maalesef'}
+        users[user]['golf'] = max(users[user]['golf'], 16-len(code)//60)
+        print(users[user]['golf'])
+        usersjson = open('backend/users.json', 'w')
+        usersjson.write(json.dumps(users))
+        usersjson.close()
+        return {'result': 'success', 'codelen': str(len(code)), 'puan': str(16-len(code)//60), 'yenipuan': str(users[user]['golf'])}
+    elif not os.path.exists(f'{path}check.py'):
         for _ in range(100):
             os.system(f'python3 {path}gen.py > codes/{user}/tmpinput')
             result = os.system(f'timeout 1s python3 {codefile} < codes/{user}/tmpinput > codes/{user}/tmpoutput 2> codes/{user}/tmperror')
@@ -213,7 +248,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
         os.system(f'cp {codefile} codes/{user}/tmpcode.py')
         os.system(f'cp {path}check.py codes/{user}/tmpcheck.py')
         os.system(f'rm codes/{user}/tmperror')
-        result = os.system(f'cd codes/{user}; timeout 1s python3 tmpcheck.py > tmpexpected 2> tmperror')
+        result = os.system(f'cd codes/{user}; timeout 10s python3 tmpcheck.py > tmpexpected 2> tmperror')
         if result:
             if not os.system(f'[ -s codes/{user}/tmperror ]'):
                 return {
@@ -255,11 +290,16 @@ def scoreboard(request: Request):
         return handle_user(request)
     user = request.cookies['username']
     page = open('pages/scoreboard.html').read()
+    if len(users[user]['solved']) == 5:
+        users[user]['solved'].append([])
+        users[user]['intime'].append([])
 
-    for week in range(max(WEEKS)):
-        for q in range(10):
+    for week in range(5, max(WEEKS)):
+        for q in range(11):
             qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
+
             if q in users[user]['solved'][week] or user == 'cahid':
+
                 page += f'<th><div class="ver"><a href="bak/cahid/{week+1}/{q}">{qname}</a></div></th>'
             else:
                 page += f'<th><div class="ver">{qname}</div></th>'
@@ -271,23 +311,37 @@ def scoreboard(request: Request):
     sirala = []
 
     for adam in users:
+        if len(users[adam]['solved']) == 5:
+            users[adam]['solved'].append([])
+            users[adam]['intime'].append([])
+        if 'golf' not in users[adam]:
+            users[adam]['golf'] = 0
         if not users[adam]['show']:
             continue
         isim = users[adam]['fullname']
         part = f" <tr> <td><strong>{isim}</strong></td> "
         puan = 0
-        for week in range(max(WEEKS)):
+        for week in range(5, max(WEEKS)):
             for q in range(10):
                 if q in users[adam]['solved'][week]:
                     if q in users[user]['solved'][week] or user == 'cahid':
                         part += f'<td class="solved"><a href="bak/{adam}/{week+1}/{q}">M</a></td>'
                     else:
                         part += '<td class="solved"></td>'
-                    puan += 1
+                    puan += 3
                 else:
                     part += '<td></td>'
+            if users[adam]['golf'] >= 10:
+                part += f'<td class="solved">{users[adam]["golf"]}</td>'
+            else:
+                part += f'<td>{users[adam]["golf"]}</td>'
+            puan += users[adam]['golf']
         part += f'<td>{puan}</td></tr>'
         sirala.append((puan, part))
+
+    usersjson = open('backend/users.json', 'w')
+    usersjson.write(json.dumps(users))
+    usersjson.close()
 
     sirala.sort(reverse=True)
     for puan, part in sirala:
@@ -325,4 +379,3 @@ def bak(request: Request, ouser: str, week: int, question: int):
     except Exception as e:
         return str(e)
     return HTMLResponse(content=page)
-

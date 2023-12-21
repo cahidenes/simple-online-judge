@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İşte İsar</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: #F7FBFC;
+        }
+
+        .column {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .label {
+            font-size: 40px;
+            font-weight: bold;
+            margin-bottom: 30px;
+			text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button {
+			width: 20vw;
+            padding: 30px;
+            text-align: center;
+            font-size: 30px;
+			color: #{text_color};
+            border: none;
+			font-weight: bold;
+			border: 5px solid #{progress_bar_fill_color}; /* Add a border */
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px; /* Adjust the margin as needed */
+			margin-left: 80px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="column">
+    <div class="label">Klasik</div>
+    <div class="button-container">
+		<form action="./{hafta}/0">
+			<button class="button column1" style="background-color: #{q0}">{name0}</button>
+		</form>
+		<form action="./{hafta}/1">
+			<button class="button column1" style="background-color: #{q1}">{name1}</button>
+		</form>
+		<form action="./{hafta}/2">
+			<button class="button column1" style="background-color: #{q2}">{name2}</button>
+		</form>
+		<form action="./{hafta}/3">
+			<button class="button column1" style="background-color: #{q3}">{name3}</button>
+		</form>
+		<form action="./{hafta}/4">
+			<button class="button column1" style="background-color: #{q4}">{name4}</button>
+		</form>
+    </div>
+</div>
+
+<div class="column">
+    <div class="label">Şifre Bulma</div>
+    <div class="button-container">
+		<form action="./{hafta}/5">
+			<button class="button column2" style="background-color: #{q5}">{name5}</button>
+		</form>
+		<form action="./{hafta}/6">
+			<button class="button column2" style="background-color: #{q6}">{name6}</button>
+		</form>
+		<form action="./{hafta}/7">
+			<button class="button column2" style="background-color: #{q7}">{name7}</button>
+		</form>
+		<form action="./{hafta}/8">
+			<button class="button column2" style="background-color: #{q8}">{name8}</button>
+		</form>
+		<form action="./{hafta}/9">
+			<button class="button column2" style="background-color: #{q9}">{name9}</button>
+		</form>
+    </div>
+</div>
+
+<div class="column">
+    <div class="label">Code Golf</div>
+    <div class="button-container">
+		<form action="./{hafta}/10">
+			<button class="button column2" style="background-color: #{q10}">Code Golf</button>
+		</form>
+    </div>
+</div>
+</body>
+</html>

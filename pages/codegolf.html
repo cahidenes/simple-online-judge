@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #question-name {
+            font-size: 35px;
+            font-weight: bold;
+            margin: 20px;
+			text-align: center;
+        }
+
+        #question {
+            padding: 50px;
+			padding-bottom: 0;
+			font-size: 20px;
+			padding-bottom: 0;
+			font-size: 20px;
+        }
+
+        .sample {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample2 {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample-input,
+        .sample-output {
+            flex: 1;
+			font-size: 30px;
+			margin: 20px;
+        }
+
+		.sample pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+			width: 41vw;
+            font-family: monospace;
+			background-color: #{color2};
+			margin-top: 10px;
+			padding: 20px;
+			font-size: 20px;
+			overflow: auto;
+		}
+
+		.sample2 pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+			width: 88vw;
+            font-family: monospace;
+			background-color: #{color2};
+			margin-top: 10px;
+			padding: 20px;
+			font-size: 20px;
+			overflow: auto;
+		}
+
+
+        #input-form {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+			padding: 30px;
+        }
+
+        #user-input {
+            padding: 20px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+            font-family: monospace;
+        }
+
+        #submit-btn {
+            padding: 10px;
+            font-size: 25px;
+			background-color: #{border_color};
+            color: #fff;
+            cursor: pointer;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #{border_color};
+        }
+    </style>
+</head>
+<body>
+
+<div id="question-name">{qname}</div>
+
+<div id="question">
+	<p>{statement}</p>
+</div>
+
+<div class="sample2">
+	<div class="sample-input">
+		<strong>Beklenen Çıktı:</strong>
+		<pre id="patlataninput" class="long">{cikti}</pre>
+	</div>
+</div>
+
+<div id="input-form">
+    <textarea id="user-input" rows="10" placeholder="Kodunuzu buraya yapıştırınız"></textarea>
+    <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+</div>
+
+<div class="sample2">
+	<div class="sample-input">
+		<strong>Alınan Puan:</strong>
+		<pre id="puan" class="long">{puan}</pre>
+	</div>
+</div>
+
+<script>
+
+	 async function submitAnswer() {
+
+		var button = document.getElementById('submit-btn')
+		button.textContent = "Test ediliyor..."
+		button.onclick = "";
+
+		const userInput = document.getElementById("user-input").value;
+
+		try {
+			const response = await fetch('/hafta/{week}/{question}', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					// Add any additional headers if needed
+				},
+				body: JSON.stringify({ input: userInput }),
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! Status: ${response.status}`);
+			}
+
+			const result = await response.json();
+
+			console.log(result);
+
+			if (result.result == "success") {
+				button.style.backgroundColor = "#{color3}"
+				button.textContent = "Başarılı!"
+				button.onclick = "";
+				document.getElementById("puan").textContent = "Kod uzunluğu: " + result.codelen + " Puan: " + result.puan + " Yeni Puan: " + result.yenipuan;
+			} else {
+				button.style.backgroundColor = "#c62828"
+				button.textContent = result.result;
+				button.onclick = "";
+
+				setTimeout(resetButton, 5000);
+			}
+
+			displayResult(success, userInput, output, expected);
+		} catch {}
+
+		function resetButton() {
+			button.style.backgroundColor = "#{border_color}"
+			button.textContent = "Submit"
+			button.setAttribute("onclick", "submitAnswer()");
+		}
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
