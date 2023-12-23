@@ -379,3 +379,13 @@ def bak(request: Request, ouser: str, week: int, question: int):
     except Exception as e:
         return str(e)
     return HTMLResponse(content=page)
+
+@app.get('/veriler')
+def veriler(request: Request):
+    if handle_user(request):
+        return handle_user(request)
+    user = request.cookies['username']
+    if user != 'cahid':
+        return "Illegal"
+    return open('backend/users.json').read()
+
