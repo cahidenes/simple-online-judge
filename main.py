@@ -1,6 +1,6 @@
 from typing import Union, Annotated
 from fastapi import FastAPI, Request, Body, Depends, HTTPException, status, APIRouter, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import Cookie
 from pydantic import BaseModel
@@ -388,5 +388,5 @@ def veriler(request: Request):
     user = request.cookies['username']
     if user != 'cahid':
         return "Illegal"
-    return open('backend/users.json').read()
+    return JSONResponse(open('backend/users.json').read())
 
