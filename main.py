@@ -294,8 +294,8 @@ def scoreboard(request: Request):
         users[user]['solved'].append([])
         users[user]['intime'].append([])
 
-    for week in range(5, max(WEEKS)):
-        for q in range(11):
+    for week in range(0, 6):
+        for q in range(10 + (1 if (week == 5) else 0)):
             qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
 
             if q in users[user]['solved'][week] or user == 'cahid':
