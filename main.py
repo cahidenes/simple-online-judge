@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [6]
+WEEKS = [5]
 
 app = FastAPI()
 
@@ -110,7 +110,7 @@ def getWeek(request: Request, week: int):
         page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
         page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
 
-    page = page.replace(f'{{q10}}', color3 if users[user]['golf'] >= 10 else color2)
+    # page = page.replace(f'{{q10}}', color3 if users[user]['golf'] >= 10 else color2)
 
     page = page.replace('{background_color}', color1)
     page = page.replace('{progress_bar_empty_color}', color2)
