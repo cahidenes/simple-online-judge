@@ -321,14 +321,14 @@ def scoreboard(request: Request):
         isim = users[adam]['fullname']
         part = f" <tr> <td><strong>{isim}</strong></td> "
         puan = 0
-        for week in range(5, max(WEEKS)):
-            for q in range(10):
+        for week in range(0, 6):
+            for q in range(10 + (1 if week == 5 else 0)):
                 if q in users[adam]['solved'][week]:
                     if q in users[user]['solved'][week] or user == 'cahid':
                         part += f'<td class="solved"><a href="bak/{adam}/{week+1}/{q}">M</a></td>'
                     else:
                         part += '<td class="solved"></td>'
-                    puan += 3
+                    puan += 1
                 else:
                     part += '<td></td>'
             if users[adam]['golf'] >= 10:
