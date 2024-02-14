@@ -1,12 +1,10 @@
-a = int(input())
-b = int(input())
+asallar = [2, 3, 5, 7, 11, 13, 17, 19]
+listem = []
+for p in asallar:
+    for q in asallar:
+        for r in asallar:
+            listem.append(p**2 + q**3 + r**4)
 
-if a > b and a % 2 == 0 and b % 2 == 1:
-    print('uyumlu')
-elif a < b and a % 3 == 0 and b - a >= 10:
-    print('uyumlu')
-elif a == b and a > 50:
-    print('uyumlu')
-else:
-    print('uyumsuz')
+listem.sort()
+print(listem[int(input())-1])
 

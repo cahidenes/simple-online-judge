@@ -1,31 +1,11 @@
-olasilik = 0
+n = int(input())
+def f(n):
+    if n == 0:
+        return 0
+    else:
+        k = f(n-1) - n
+        if k > 0:
+            return k
+        return f(n-1) + n
 
-ayak = input()
-if ayak == 'sag':
-    olasilik += 1322*100/1653
-else:
-    olasilik += 388*100/480
-
-kuvvet = input()
-if kuvvet == 'dusuk':
-    olasilik += 47
-elif kuvvet == 'orta':
-    olasilik += 81
-else:
-    olasilik += 63
-
-lig = input()
-if lig == 'bundesliga':
-    olasilik += 83.33
-else:
-    olasilik += 73.23
-
-durum = input()
-if durum == 'oyun_ici':
-    olasilik += 85
-else:
-    olasilik += 76
-
-olasilik /= 4
-
-print(round(olasilik, 2))
+print(f(n))

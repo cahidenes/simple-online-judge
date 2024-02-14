@@ -1,4 +1,9 @@
 import random
-print(random.randint(0, 100))
-print(random.randint(0, 100))
-print(random.choice(['+', '-', '*', '/', '%', '**']))
+
+n = random.randint(3, 8)
+m = random.randint(5, 15)
+print(n, m)
+print(*random.sample(['Boy', 'Genişlik', 'En', 'Kalınlık', 'Yaş', 'Sağlık', 'Verimlilik', 'Yararlılık', 'Mesafe', 'Yaşam', 'Derinlik', 'Yoğunluk'], n))
+for i in range(m):
+    print(*[random.randint(1, 10000) for _ in range(n)])
+
