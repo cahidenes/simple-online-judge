@@ -183,6 +183,8 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     if 'exec(' in code:
         return {'result': 'exec yasak >:('}
 
+    os.system('mkdir -p codes/' + user)
+
     with open(f'codes/{user}/tmpinput', 'w') as f:
         f.write(' ')
     with open(f'codes/{user}/tmpoutput', 'w') as f:
