@@ -247,6 +247,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     else:
         os.system(f'cp {codefile} codes/{user}/tmpcode.py')
         os.system(f'cp {path}check.py codes/{user}/tmpcheck.py')
+        os.system(f'cp {path}helper.py codes/{user}/helper.py')
         os.system(f'rm codes/{user}/tmperror')
         result = os.system(f'cd codes/{user}; timeout 10s python3 tmpcheck.py > tmpexpected 2> tmperror')
         if result:
@@ -390,3 +391,22 @@ def veriler(request: Request):
         return "Illegal"
     return JSONResponse(open('backend/users.json').read())
 
+
+@app.get('/dosya/{filename}')
+def bak(request: Request, filename: str):
+    if handle_user(request):
+        return handle_user(request)
+    user = request.cookies['username']
+    try:
+        page = open('pages/bak.html').read()
+        page = page.replace('{color1}', color1)
+        page = page.replace('{color2}', color2)
+        page = page.replace('{color3}', color3)
+        page = page.replace('{color33}', color33)
+        page = page.replace('{color4}', color4)
+        codefile = f'dosyalar/{filename}'
+        page = page.replace('{code}', open(codefile).read().replace('\n', '<br>').replace(' ', '&nbsp;').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;'))
+
+    except Exception as e:
+        return str(e)
+    return HTMLResponse(content=page)
