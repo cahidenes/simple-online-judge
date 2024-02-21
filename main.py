@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [1]
+WEEKS = [2]
 
 app = FastAPI()
 
@@ -107,8 +107,12 @@ def getWeek(request: Request, week: int):
         page = open('pages/week.html').read()
 
     for q in range(10):
-        page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
-        page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
+        try:
+            page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
+            page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
+        except:
+            page = page.replace(f'{{name{q}}}', 'YOK')
+
 
     # page = page.replace(f'{{q10}}', color3 if users[user]['golf'] >= 10 else color2)
 
@@ -150,7 +154,10 @@ def getQuestion(request: Request, week: int, question: int):
                 sample = sample.replace('{sampleoutput}', open(f'weeks/week{week}/q{question}/out{i}').read())
                 page += sample
 
-        page += open('pages/soru_end.html').read()
+        if not os.path.exists(f'weeks/week{week}/q{question}/check.py'):
+            page += open('pages/soru_end.html').read()
+        else:
+            page += open('pages/soru-check.html').read()
 
     page = page.replace('{statement}', open(f'weeks/week{week}/q{question}/q.html').read())
     page = page.replace('{qname}', open(f'weeks/week{week}/q{question}/name.txt').read())
@@ -250,22 +257,20 @@ def solve(request: Request, week: int, question: int, solution: Solution):
         os.system(f'cp {codefile} codes/{user}/tmpcode.py')
         os.system(f'cp {path}check.py codes/{user}/tmpcheck.py')
         os.system(f'cp {path}helper.py codes/{user}/helper.py')
+        os.system(f'cp {path}gerekli/* codes/{user}/')
         os.system(f'rm codes/{user}/tmperror')
-        result = os.system(f'cd codes/{user}; timeout 10s python3 tmpcheck.py > tmpexpected 2> tmperror')
+        os.system(f'rm codes/{user}/tmpaciklama')
+        result = os.system(f'cd codes/{user}; timeout 10s python3 tmpcheck.py > tmpaciklama 2> tmperror')
         if result:
             if not os.system(f'[ -s codes/{user}/tmperror ]'):
                 return {
                         'result': 'Patladı :(',
-                        'input': open(f'codes/{user}/tmpinput').read(),
-                        'output': open(f'codes/{user}/tmperror').read(),
-                        'expected': ''
+                        'aciklama': open(f'codes/{user}/tmperror').read(),
                         }
             else:
                 return {
                         'result': 'Patladı :(',
-                        'input': open(f'codes/{user}/tmpinput').read(),
-                        'output': open(f'codes/{user}/tmpoutput').read(),
-                        'expected': open(f'codes/{user}/tmpexpected').read()
+                        'aciklama': open(f'codes/{user}/tmpaciklama').read(),
                         }
 
 
@@ -299,13 +304,14 @@ def scoreboard(request: Request):
 
     for week in range(0, 6):
         for q in range(10 + (1 if (week == 5) else 0)):
-            qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
-
-            if q in users[user]['solved'][week] or user == 'cahid':
-
-                page += f'<th><div class="ver"><a href="bak/cahid/{week+1}/{q}">{qname}</a></div></th>'
-            else:
-                page += f'<th><div class="ver">{qname}</div></th>'
+            try:
+                qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
+                if q in users[user]['solved'][week] or user == 'cahid':
+                    page += f'<th><div class="ver"><a href="bak/cahid/{week+1}/{q}">{qname}</a></div></th>'
+                else:
+                    page += f'<th><div class="ver">{qname}</div></th>'
+            except:
+                pass
     page += f'<th><div class="ver">Toplam</div></th>'
     page += f'<td class="empty-column"></td>'
 
