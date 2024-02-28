@@ -1,7 +1,10 @@
 # from tmpcode import topla
 import random
 import os
-os.system('rm yapistir.txt')
+try:
+    os.system('rm yapistir.txt')
+except:
+    pass
 
 mat = [[str(random.randint(10, 99)) for _ in range(random.rantint(8, 12))] for _ in range(5, 20)]
 
