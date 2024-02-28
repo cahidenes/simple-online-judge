@@ -1,6 +1,6 @@
 from typing import Union, Annotated
 from fastapi import FastAPI, Request, Body, Depends, HTTPException, status, APIRouter, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import Cookie
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [2]
+WEEKS = [3]
 
 app = FastAPI()
 
@@ -406,6 +406,9 @@ def bak(request: Request, filename: str):
         return handle_user(request)
     user = request.cookies['username']
     try:
+        if not filename.endswith('.py'):
+            return FileResponse(path='dosyalar/'+filename, filename=filename)
+
         page = open('pages/bak.html').read()
         page = page.replace('{color1}', color1)
         page = page.replace('{color2}', color2)
