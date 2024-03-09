@@ -332,20 +332,18 @@ def scoreboard(request: Request):
         puan = 0
         for week in range(0, 6):
             for q in range(10):
-                if q in users[adam]['solved'][week]:
-                    if q in users[user]['solved'][week] or user == 'cahid':
-                        part += f'<td class="solved"><a href="bak/{adam}/{week+1}/{q}">M</a></td>'
+                try:
+                    qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
+                    if q in users[adam]['solved'][week]:
+                        if q in users[user]['solved'][week] or user == 'cahid':
+                            part += f'<td class="solved"><a href="bak/{adam}/{week+1}/{q}">M</a></td>'
+                        else:
+                            part += '<td class="solved"></td>'
+                        puan += 1
                     else:
-                        part += '<td class="solved"></td>'
-                    puan += 1
-                else:
-                    part += '<td></td>'
-            if week == 5:
-                if users[adam]['golf'] >= 10:
-                    part += f'<td class="solved">{users[adam]["golf"]}</td>'
-                else:
-                    part += f'<td>{users[adam]["golf"]}</td>'
-                puan += users[adam]['golf']
+                        part += '<td></td>'
+                except:
+                    pass
         part += f'<td>{puan}</td></tr>'
         sirala.append((puan, part))
 
