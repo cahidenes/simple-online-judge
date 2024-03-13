@@ -1,6 +1,14 @@
-camel = input()
+import requests
 
-for c in camel:
-    if c.isupper():
-        print("_", end="")
-    print(c.lower(),end='')
+url = "https://api.acikkuran.com/surah/{}/verse/{}"
+
+def ayet(sure, ayet):
+    response = requests.get(url.format(sure, ayet))
+    # print(response.json()['data']['verse'])
+    return '{} Suresi {}. Ayet\n\n{}\n\n{}'.format(
+        response.json()['data']['surah']['name'],
+        ayet,
+        response.json()['data']['verse'],
+        response.json()['data']['translation']['text']
+            )
+
