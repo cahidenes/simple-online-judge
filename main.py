@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [5]
+WEEKS = [6]
 
 app = FastAPI()
 
@@ -52,8 +52,11 @@ def root(request: Request):
     user = request.cookies['username']
     page = open('pages/main.html').read()
 
-    for week in range(6):
+    for week in range(12):
         item = open('pages/main_item.html').read()
+        if len(users[user]['solved']) == week:
+            users[user]['solved'].append([])
+            users[user]['intime'].append([])
         solved = len(users[user]['solved'][week])
         intime = len(users[user]['intime'][week])
         item = item.replace('{percent}', str(solved*10))
@@ -101,10 +104,10 @@ def getWeek(request: Request, week: int):
     if not (0 < week <= max(WEEKS)):
         return RedirectResponse("/")
 
-    if week == 6:
-        page = open('pages/final.html').read()
-    else:
-        page = open('pages/week.html').read()
+    # if week == 6:
+    #     page = open('pages/final.html').read()
+    # else:
+    page = open('pages/week.html').read()
 
     for q in range(10):
         try:
@@ -134,15 +137,16 @@ def getQuestion(request: Request, week: int, question: int):
 
     if not (0 < week <= max(WEEKS)) or not (0 <= question <= 10):
         return RedirectResponse("/")
-    if week == 6 and 4 < question < 10:
-        page = open('pages/sifrebul.html').read()
-        page = page.replace('{kod}', open(f'weeks/week{week}/q{question}/kod.py').read())
-        page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
-    elif week == 6 and question == 10:
-        page = open('pages/codegolf.html').read()
-        page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
-        page = page.replace('{puan}', str(users[user]['golf']))
-    else:
+    # if week == 6 and 4 < question < 10:
+    #     page = open('pages/sifrebul.html').read()
+    #     page = page.replace('{kod}', open(f'weeks/week{week}/q{question}/kod.py').read())
+    #     page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
+    # elif week == 6 and question == 10:
+    #     page = open('pages/codegolf.html').read()
+    #     page = page.replace('{cikti}', open(f'weeks/week{week}/q{question}/cikti').read())
+    #     page = page.replace('{puan}', str(users[user]['golf']))
+    # else:
+    if True:
         page = open('pages/soru.html').read()
 
         for i in range(10):
@@ -210,25 +214,25 @@ def solve(request: Request, week: int, question: int, solution: Solution):
 
     path = f'weeks/week{week}/q{question}/'
 
-    if week == 6 and 4 < question < 10:
-        correct = open(f'{path}sifre').read()
-        if correct.strip() != code.strip():
-            return {'result': 'Maalesef'}
-    elif week == 6 and question == 10:
-        correct = open(f'{path}cikti').read()
-        result = os.system(f'timeout 1s python3 {codefile} >codes/{user}/tmpoutput 2> codes/{user}/tmperror')
-        if result:
-            return {'result': 'Maalesef'}
-        output = open(f'codes/{user}/tmpoutput').read()
-        if correct.strip() != output.strip():
-            return {'result': 'Maalesef'}
-        users[user]['golf'] = max(users[user]['golf'], 16-len(code)//60)
-        print(users[user]['golf'])
-        usersjson = open('backend/users.json', 'w')
-        usersjson.write(json.dumps(users))
-        usersjson.close()
-        return {'result': 'success', 'codelen': str(len(code)), 'puan': str(16-len(code)//60), 'yenipuan': str(users[user]['golf'])}
-    elif not os.path.exists(f'{path}check.py'):
+    # if week == 6 and 4 < question < 10:
+    #     correct = open(f'{path}sifre').read()
+    #     if correct.strip() != code.strip():
+    #         return {'result': 'Maalesef'}
+    # elif week == 6 and question == 10:
+    #     correct = open(f'{path}cikti').read()
+    #     result = os.system(f'timeout 1s python3 {codefile} >codes/{user}/tmpoutput 2> codes/{user}/tmperror')
+    #     if result:
+    #         return {'result': 'Maalesef'}
+    #     output = open(f'codes/{user}/tmpoutput').read()
+    #     if correct.strip() != output.strip():
+    #         return {'result': 'Maalesef'}
+    #     users[user]['golf'] = max(users[user]['golf'], 16-len(code)//60)
+    #     print(users[user]['golf'])
+    #     usersjson = open('backend/users.json', 'w')
+    #     usersjson.write(json.dumps(users))
+    #     usersjson.close()
+    #     return {'result': 'success', 'codelen': str(len(code)), 'puan': str(16-len(code)//60), 'yenipuan': str(users[user]['golf'])}
+    if not os.path.exists(f'{path}check.py'):
         for _ in range(100):
             os.system(f'python3 {path}gen.py > codes/{user}/tmpinput')
             result = os.system(f'timeout 1s python3 {codefile} < codes/{user}/tmpinput > codes/{user}/tmpoutput 2> codes/{user}/tmperror')
@@ -303,7 +307,7 @@ def scoreboard(request: Request):
         users[user]['intime'].append([])
 
     for week in range(0, max(WEEKS)):
-        for q in range(10 + (1 if (week == 5) else 0)):
+        for q in range(10):
             try:
                 qname = open(f'weeks/week{week+1}/q{q}/name.txt').read()
                 if q in users[user]['solved'][week] or user == 'cahid':
