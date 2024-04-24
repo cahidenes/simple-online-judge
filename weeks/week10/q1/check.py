@@ -10,6 +10,8 @@ for _ in range(100):
     if d3 >= 60:
         d3 -= 60
         s3 = 1
+    else:
+        s3 = 0
     s3 += s1 + s2
     if s3 >= 24:
         s3 -= 24
@@ -17,7 +19,7 @@ for _ in range(100):
     saat1 = Saat(saat=s1, dakika=d1)
     saat2 = Saat(saat=s2, dakika=d2)
     if str(saat1 + saat2) != f'{s3:02}:{d3:02}':
-        print('print deyince yanlış çıktı:\nBeklenen: ', f'{s3:02}:{d3:02}', '\nÇıktı: ', saat1+saat2)
+        print(saat1, '+', saat2, '=', saat1+saat2, 'diyor, halbuki', f'{s3:02}:{d3:02}', 'olmalıydı')
         exit(1)
 
     saat3 = Saat(saat=s3, dakika=d3)
