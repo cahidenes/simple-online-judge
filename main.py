@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [9]
+WEEKS = [10]
 
 app = FastAPI()
 
@@ -185,6 +185,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     user = request.cookies['username']
     if not (0 < week <= max(WEEKS)) or not (0 <= question <= 10):
         return {'result': 'illegal'}
+    
 
     code = solution.input;
     # if 'import ' in code:
@@ -285,6 +286,10 @@ def solve(request: Request, week: int, question: int, solution: Solution):
     f = open(codefile, 'w')
     f.write(code)
     f.close()
+
+    while len(users[user]['solved']) < week:
+        users[user]['solved'].append([])
+        users[user]['intime'].append([])
 
     if question not in users[user]['solved'][week-1]:
         users[user]['solved'][week-1].append(question)
