@@ -15,7 +15,7 @@ color3 = '66bb6a'
 color33 = '3F72AF'
 color4 = '112D4E'
 
-WEEKS = [11]
+WEEKS = [12]
 
 app = FastAPI()
 
@@ -113,7 +113,7 @@ def getWeek(request: Request, week: int):
         try:
             page = page.replace(f'{{name{q}}}', open(f'weeks/week{week}/q{q}/name.txt').read())
             page = page.replace(f'{{q{q}}}', color3 if q in users[user]['solved'][week-1] else color2)
-        except:
+        except Exception as e:
             page = page.replace(f'{{name{q}}}', 'YOK')
 
 
