@@ -256,7 +256,7 @@ def solve(request: Request, week: int, question: int, solution: Solution):
                         'result': 'Patladı :(',
                         'input': open(f'codes/{user}/tmpinput').read(),
                         'output': open(f'codes/{user}/tmpoutput').read(),
-                        'expected': open(f'codes/{user}/tmpexpected').read()
+                        'expected': 'bunu söyleyemiyoruz maalesef'
                         }
     else:
         os.system(f'cp {codefile} codes/{user}/tmpcode.py')
