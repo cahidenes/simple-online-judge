@@ -1,0 +1,422 @@
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+		<style>
+			textarea {
+				font-size: 16px;
+			}
+		</style>
+	</head>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a class="active" href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div style="padding: 30px;">
+		<div class="round">
+			<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required>
+		</div>
+		<div class="round">
+			<textarea style="width: 100%" rows="10" placeholder="Type question here" id="question">{{question}}</textarea>
+		</div>
+		<div class="round">
+			<textarea style="width: 100%" rows="10" placeholder="Pre-solution code" id="presolution">{{presolution}}</textarea>
+		</div>
+		<div class="round">
+			<textarea style="width: 100%" rows="10" placeholder="Initial solution code" id="tmpsolution">{{tmpsolution}}</textarea>
+		</div>
+		<div class="round">
+			<textarea style="width: 100%" rows="10" placeholder="Post-solution code" id="postsolution">{{postsolution}}</textarea>
+		</div>
+		<div class="round">
+			<input style="width: 100%; font-size:22px;" id="envfiles" name="envfiles" value="{{envfiles}}" placeholder="Env Files, comma separated">
+		</div>
+
+		<select class="round" style="width: 100%" onchange="selectJudge();" id="judgeselect">
+			<option value="select" {{default_selected}}>Select Judge Type</option>
+			<option value="solution" {{solution_selected}}>Solution</option>
+			<option value="checker" {{checker_selected}}>Checker</option>
+			<option value="testcaseonly" {{testcase_selected}}>Testcase Only</option>
+			<option value="outputonly" {{output_selected}}>Output Only</option>
+			<option value="guessinput" {{guessinput_selected}}>Guess Input</option>
+			<option value="codegolf" {{codegolf_selected}}>Code Golf</option>
+			<option value="manual" {{manual_selected}}>Manual</option>
+		</select>
+
+		<!-- output only -->
+		<div id="outputonly">
+			<div class="round">
+				<textarea style="width: 100%" rows="10" placeholder="Expected output" id="output">{{outputonly_output}}</textarea>
+			</div>
+		</div>
+
+		<!-- testcase only -->
+		<div id="testcaseonly">
+			<div id="testcasepairs">
+				<div id="testcaseonly_yedektestcasepair" style="display: flex; width: 100%;">
+					<div class="round" style="width: 100%; margin: 20px;">
+						<textarea style="width: 100%;" rows="10" placeholder="Sample Input" id="output"></textarea>
+					</div>
+					<div class="round" style="width: 100%; margin: 20px;">
+						<textarea style="width: 100%;" rows="10" placeholder="Expected output" id="output"></textarea>
+					</div>
+					<div class="round" style="width: 10%; margin: 20px;">
+						<input style="height: 40%; width: 30px;" type="checkbox">
+						<div class="button" sytle="height: 40%;" onclick="remove_testcase(this)">-</div>
+					</div>
+				</div>
+<!-- testcaseonly_testcasepair -->
+				<div class="testcasepair" style="display: flex; width: 100%;">
+					<div class="round" style="width: 100%; margin: 20px;">
+						<textarea style="width: 100%;" rows="10" placeholder="Sample Input" id="output">{{testcaseonly_input}}</textarea>
+					</div>
+					<div class="round" style="width: 100%; margin: 20px;">
+						<textarea style="width: 100%;" rows="10" placeholder="Expected output" id="output">{{testcaseonly_output}}</textarea>
+					</div>
+					<div class="round" style="width: 10%; margin: 20px;">
+						<input style="height: 40%; width: 30px;" {{testcaseonly_show}} type="checkbox">
+						<div class="button" sytle="height: 40%;" onclick="remove_testcase(this)">-</div>
+					</div>
+				</div>
+<!-- testcaseonly_testcasepair end -->
+			</div>
+			<div class="button" onclick="newtestcase()"> New Testcase </div>
+			<script>
+				document.getElementById("testcaseonly_yedektestcasepair").style.display = "none";
+				function newtestcase() {
+					var testcasepair = document.getElementById("testcaseonly_yedektestcasepair");
+					var testcasepairs = document.getElementById("testcasepairs");
+					var newpair = testcasepair.cloneNode(true);
+					newpair.style.display = "flex";
+					newpair.class = "testcasepair";
+					testcasepairs.appendChild(newpair);
+				}
+				function remove_testcase(obj) {
+					var rem = obj.parentNode.parentNode;
+					if (rem.parentNode.children.length != 1) {
+						rem.remove();
+					}
+				}
+			</script>
+		</div>
+
+		<!-- solution -->
+		<div id="solution">
+			<div id="yedektestcasepair" style="display: flex; width: 100%;">
+				<div class="round" style="width: 100%; margin: 20px;">
+					<textarea style="width: 100%;" rows="10" placeholder="Sample Input"></textarea>
+				</div>
+				<div class="round" style="width: 100%; margin: 20px;">
+					<textarea style="width: 100%;" rows="10" placeholder="Expected output"></textarea>
+				</div>
+				<div class="round" style="width: 10%; margin: 20px;">
+					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
+				</div>
+			</div>
+			<div class="round">
+				<textarea style="width: 100%;" rows="10" placeholder="Solution" id="solution_area">{{solution_solution}}</textarea>
+			</div>
+			<div class="round">
+				<textarea style="width: 100%;" rows="10" placeholder="Testcase generator" id="generator">{{solution_generator}}</textarea>
+			</div>
+			<div class="button" onclick="testgenerator()"> Generate a Testcase </div>
+			<div id="solution_sampletestcasepair" style="display: flex; width: 100%;">
+				<div class="round" style="width: 100%; margin: 20px;">
+					<p style="font-size: 18px;">
+					</p>
+				</div>
+				<div class="round" style="width: 100%; margin: 20px;">
+					<p style="font-size: 18px;">
+					</p>
+				</div>
+			</div>
+			<div class="button" onclick="addsampletestcase()"> Add Sample Testcase </div>
+			<div id="solution_testcasepairs">
+<!-- solution_testcasepair -->
+			<div id="yedektestcasepair" style="display: flex; width: 100%;">
+				<div class="round" style="width: 100%; margin: 20px;">
+					<textarea style="width: 100%;" rows="10" placeholder="Sample Input">{{solution_sampleinput}}</textarea>
+				</div>
+				<div class="round" style="width: 100%; margin: 20px;">
+					<textarea style="width: 100%;" rows="10" placeholder="Expected output">{{solution_sampleoutput}}</textarea>
+				</div>
+				<div class="round" style="width: 10%; margin: 20px;">
+					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
+				</div>
+			</div>
+<!-- solution_testcasepair end -->
+			</div>
+			<div class="button" onclick="runsamples()"> Generate Outputs of Samples </div>
+			<script>
+				function testgenerator() {
+					fetch('/samplerun', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							"solution": document.getElementById("solution_area").value,
+							"generator": document.getElementById("generator").value
+						})
+					}).then(response => response.json()).then(data => {
+						if (data["error"]) {
+							alert(data["error"]);
+							return
+						}
+						document.getElementById("solution_sampletestcasepair").children[0].children[0].innerText = data["input"];
+						document.getElementById("solution_sampletestcasepair").children[1].children[0].innerText = data["output"];
+					})
+				}
+
+				document.getElementById("yedektestcasepair").style.display = "none";
+				function addsampletestcase() {
+					var newpair = document.getElementById("yedektestcasepair").cloneNode(true);
+					newpair.style.display = "flex";
+
+					var sampletestcase = document.getElementById("solution_sampletestcasepair");
+
+
+					newpair.children[0].children[0].value = sampletestcase.children[0].children[0].innerText;
+					newpair.children[1].children[0].value = sampletestcase.children[1].children[0].innerText;
+
+					var sampletestcasepairs = document.getElementById("solution_testcasepairs");
+					sampletestcasepairs.appendChild(newpair);
+				}
+
+				async function runsamples() {
+					var pairs = document.getElementById("solution_testcasepairs");
+					var solution = document.getElementById("solution_area").value;
+					for (var iii = 0; iii < pairs.children.length; iii++) {
+						console.log(iii);
+						var sampleinput = pairs.children[iii].children[0].children[0].value;
+						await fetch('/samplerun', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								"solution": solution,
+								"input": sampleinput
+							})
+						}).then(response => response.json()).then(data => {
+							if (data["error"]) {
+								alert(data["error"]);
+								return
+							}
+							console.log(data["output"]);
+							pairs.children[iii].children[1].children[0].value = data["output"];
+						})
+					}
+				}
+
+				function remove_testcase2(obj) {
+					rem = obj.parentNode.parentNode.remove();
+				}
+			</script>
+		</div>
+
+		<!-- checker -->
+		<div id="checker">
+			<div class="round">
+				<textarea style="width: 100%;" rows="10" placeholder="Checker" id="checker_area">{{checker_checker}}</textarea>
+			</div>
+		</div>
+
+		<!-- guess input -->
+		<div id="guessinput">
+			<div class="round">
+				<textarea style="width: 100%;" rows="10" placeholder="Code" id="guessinput_code">{{guessinput_code}}</textarea>
+			</div>
+			<div class="round">
+				<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="guessinput_input" id="guessinput_input" placeholder="Input" value="{{guessinput_input}}" required>
+			</div>
+
+			<div style="display: flex; width: 100%;">
+				<div class="round" style="width: 100%; margin: 20px;">
+					<pre id="guessinput_output" style="width: 100%;" placeholder="Output">{{guessinput_output}}</pre>
+				</div>
+				<div class="round" style="width: 10%; margin: 20px;">
+					<div class="button" sytle="height: 40%;" onclick="gi_generate_output()">⟲</div>
+				</div>
+			</div>
+			<script>
+				function gi_generate_output() {
+					fetch('/samplerun', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							"solution": document.getElementById("guessinput_code").value,
+							"input": document.getElementById("guessinput_input").value
+						})
+					}).then(response => response.json()).then(data => {
+						if (data["error"]) {
+							alert(data["error"]);
+							return
+						}
+						document.getElementById("guessinput_output").innerText = data["output"];
+					})
+				}
+			</script>
+		</div>
+
+		<!-- code golf -->
+		<div id="codegolf">
+			<div class="round">
+				<textarea style="width: 100%;" rows="10" placeholder="Output" id="codegolf_output">{{codegolf_output}}</textarea>
+			</div>
+			<div class="round">
+				<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="codegolf_score" id="codegolf_score" placeholder="Score calculation (c for character count)" value="{{codegolf_score}}" required>
+			</div>
+		</div>
+
+		<!-- manual -->
+		 <div id="manual">
+		 </div>
+
+		<div class="round">
+			<input id="points" type="number" name="points" value="{{points}}" placeholder="Points" required>
+		</div>
+
+		<select class="round" style="width: 100%" id="section_select">
+			<option value="default" selected> - </option>
+<!-- section_option -->
+<option value="{{value}}" {{selected}}> {{name}} </option>
+<!-- section_option end -->
+		</select>
+
+		<div class="button" onclick="addquestion('-1')" {{add_hidden}}> Add Question </div>
+		<div class="button" onclick="addquestion('{{id}}')" {{save_hidden}}> Save </div>
+
+	</div>
+	</body>
+	<script>
+		var solution = document.getElementById("solution");
+		var testcaseonly = document.getElementById("testcaseonly");
+		var checker = document.getElementById("checker");
+		var outputonly = document.getElementById("outputonly");
+		var guessinput = document.getElementById("guessinput");
+		var codegolf = document.getElementById("codegolf");
+		var manual = document.getElementById("manual");
+
+		var judges = [solution, testcaseonly, checker, outputonly, guessinput, codegolf, manual];
+		var judge = document.getElementById("judgeselect");
+
+		function selectJudge() {
+			for (var i = 0; i < judges.length; i++) {
+				judges[i].style.display = "none";
+			}
+			if(judge.value == "solution") {
+				solution.style.display = "block";
+			} else if(judge.value == "checker") {
+				checker.style.display = "block";
+			} else if(judge.value == "testcaseonly") {
+				testcaseonly.style.display = "block";
+			} else if(judge.value == "outputonly") {
+				outputonly.style.display = "block";
+			} else if(judge.value == "guessinput") {
+				guessinput.style.display = "block";
+			} else if(judge.value == "codegolf") {
+				codegolf.style.display = "block";
+			} else if(judge.value == "manual") {
+				manual.style.display = "block";
+			}
+		}
+
+		selectJudge();
+
+		function addquestion(id) {
+
+			var title = document.getElementById("title").value;
+			var question = document.getElementById("question").value;
+			var presolution = document.getElementById("presolution").value;
+			var tmpsolution = document.getElementById("tmpsolution").value;
+			var postsolution = document.getElementById("postsolution").value;
+			var envfiles = document.getElementById("envfiles").value;
+			var type = judge.value;
+			var section = document.getElementById("section_select").value;
+			var points = Number(document.getElementById("points").value);
+
+			var question = {
+				id: id,
+				title: title,
+				question: question,
+				presolution: presolution,
+				tmpsolution: tmpsolution,
+				postsolution: postsolution,
+				envfiles: envfiles,
+				type: type,
+				section: section,
+				points: points
+			}
+
+			if (type == "outputonly") {
+				var output = document.getElementById("output").value;
+				question["output"] = output;
+			} else if (type == "testcaseonly") {
+				pairs = document.getElementById("testcasepairs");
+				question["testcases"] = [];
+				for (var i = 1; i < pairs.children.length; i++) {
+					var sampleinput = pairs.children[i].children[0].children[0].value;
+					var sampleoutput = pairs.children[i].children[1].children[0].value;
+					var show = pairs.children[i].children[2].children[0].checked;
+					question["testcases"].push({input: sampleinput, output: sampleoutput, show: show});
+				}
+			} else if (type == "solution") {
+				var solution_area = document.getElementById("solution_area").value;
+				var generator = document.getElementById("generator").value;
+				question["solution"] = solution_area;
+				question["generator"] = generator;
+
+				pairs = document.getElementById("solution_testcasepairs");
+				question["testcases"] = [];
+				for (var i = 0; i < pairs.children.length; i++) {
+					var sampleinput = pairs.children[i].children[0].children[0].value;
+					var sampleoutput = pairs.children[i].children[1].children[0].value;
+					question["testcases"].push({input: sampleinput, output: sampleoutput});
+				}
+			} else if (type == "checker") {
+				var checker_area = document.getElementById("checker_area").value;
+				question["checker"] = checker_area;
+			} else if (type == "guessinput") {
+				var guessinput_area = document.getElementById("guessinput_code").value;
+				question["guessinputcode"] = guessinput_area;
+				var guessinput_input = document.getElementById("guessinput_input").value;
+				question["input"] = guessinput_input;
+				var guessinput_output = document.getElementById("guessinput_output").innerText;
+				question["output"] = guessinput_output;
+			} else if (type == "codegolf") {
+				var codegolf_output = document.getElementById("codegolf_output").value;
+				question["output"] = codegolf_output;
+				var codegolf_score = document.getElementById("codegolf_score").value;
+				question["score"] = codegolf_score;
+			} else if (type == "manual") {
+
+			}
+
+			fetch("/addquestion", {
+				method: "POST",
+				body: JSON.stringify(question),
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then(response => response.json()).then(data => {
+				if(data.success) {
+					window.location.href = "/listquestions";
+				} else {
+					alert(data.error);
+				}
+			})
+		}
+	
+	</script>
+</html>

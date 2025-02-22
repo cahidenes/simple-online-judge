@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+	</head>
+	<body>
+		<div class="topnav">
+			<a href="/">Home</a>
+			<a href="/resources">Resources</a>
+			<a href="/listresources">Edit Resources</a>
+			<a href="/listquestions">Questions</a>
+			<a href="/listusers">Users</a>
+			<a class="active" href="/listsections">Sections</a>
+			<a href="/files">Files</a>
+			<a href="/scoreboard">Scoreboard</a>
+			<a class="right" href="/login">{{current_user}}</a>
+		</div>
+		<div id="section_list" style="display: flex; flex-flow: row wrap;">
+<!-- section -->
+			<div class="hcenter round" style="margin-top: 30px; width: 45%;">
+				<input type="hidden" name="id" id="id" value="{{id}}">
+				<input style="font-size: 30px; padding: 10px; width: 90%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required> <br>
+				Questions: {{questions}} <br>
+				Visible: <input type="checkbox" name="visible" id="visible" {{visible}}> <br>
+				Active: <input type="checkbox" name="active" id="active" {{active}}> <br>
+				Resource: <input type="checkbox" name="resource" id="resource" {{resource}}> <br>
+				Order: <input type="number" name="order" id="order" value="{{order}}"> <br>
+				<div class="button" onclick="del('{{id}}')">Delete</div>
+			</div>
+<!-- section end -->
+		</div>
+
+		<div class="button" onclick="add()">Add Section</div>
+		<div class="button" onclick="save()">Save</div>
+	</body>
+	<script>
+		function del(id) {
+			fetch("/deletesection/" + id, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					id: id
+				})
+			}).then(response => response.json()).then(data => {
+				if (data.success) {
+					window.location.href = "/listsections";
+				} else {
+					alert(data.error);
+				}
+			})
+		}
+
+		function add() {
+			fetch("/addsection", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then(response => {
+				window.location.href = "/listsections";
+			})
+		}
+
+		function save() {
+			var sections = {};
+			var section_list = document.getElementById("section_list");
+
+			for (var i = 0; i < section_list.children.length; i++) {
+				var section = section_list.children[i];
+				console.log(section);
+				sections[section.children[0].value] = {
+					title: section.children[1].value,
+					visible: section.children[4].checked,
+					active: section.children[6].checked,
+					resource: section.children[8].checked,
+					order: Number(section.children[10].value)
+				}
+			}
+			console.log(sections);
+			fetch("/savesections", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(sections)
+			}).then(response => response.json()).then(data => {
+				if (data.success) {
+					window.location.href = "/listsections";
+				} else {
+					alert(data.error);
+				}
+			})
+		}
+	</script>
+</html>

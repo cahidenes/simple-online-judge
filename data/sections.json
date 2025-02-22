@@ -1,0 +1,37 @@
+{
+    "0": {
+        "title": "Hafta 1",
+        "visible": true,
+        "active": true,
+        "resource": false,
+        "order": 1
+    },
+    "1": {
+        "title": "New Section",
+        "visible": false,
+        "active": false,
+        "resource": false,
+        "order": 0
+    },
+    "2": {
+        "title": "G\u00fcn 1",
+        "visible": false,
+        "active": false,
+        "resource": false,
+        "order": 0
+    },
+    "3": {
+        "title": "Final",
+        "visible": false,
+        "active": false,
+        "resource": false,
+        "order": 1
+    },
+    "6": {
+        "title": "Hafta 1",
+        "visible": true,
+        "active": true,
+        "resource": true,
+        "order": 1
+    }
+}

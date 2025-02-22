@@ -1,0 +1,39 @@
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+	</head>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a class="active" href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div style="display: flex; flex-flow: row wrap;">
+<!-- user -->
+		<div class="hcenter round" style="margin-top: 10px">
+			<h2> {{name}} </h2>
+			Username: {{username}} <br>
+			Scoreboard: {{scoreboard}} <br>
+			<div class="button" onclick="editUser('{{username}}')">Edit</div>
+		</div>
+<!-- user end -->
+		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
+			<div class="button" style="width: 90%; height: 80%; align-items: center; display: flex" onclick="window.location.href = 'adduser'">
+			Add User
+			</div>
+		</div>
+		</div>
+	</body>
+	<script>
+		function editUser(username) {
+			window.location.href = "edituser/" + username;
+		}
+	</script>
+</html>

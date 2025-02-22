@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>İşte İsar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+    <style>
+        .body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+			margin: 30px;
+			width: 3000px;
+        }
+
+		.label {
+            margin-left: 10px; /* Adjust the margin as needed */
+			margin-bottom: 50px;
+			font-size: 30px;
+			font-family: 'Arial';
+        }
+
+    </style>
+</head>
+<body>
+	<div class="topnav">
+		<a {{active_home}} href="/">Home</a>
+		<a {{active_resources}} href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div class="body">
+	<div class="progress-bar">
+<!-- section -->
+		<div class="progress-button-container">
+			<button onclick="window.location.href = '/section/{{section_id}}';" {{disabled}} class="progress-button" style="background: linear-gradient(to right, #44CF6C {{percent}}%, #DBE2EF 0%);">{{name}}</button>
+			<span class="label">{{label}}</span>
+		</div>
+<!-- section end -->
+	</div>
+
+	</div>
+</body>
+<script>
+
+	var topnav = document.getElementsByClassName("topnav")[0];
+	if (topnav.children[topnav.children.length - 1].innerText != "admin") {
+            topnav.children[2].style.display = "none";
+            topnav.children[3].style.display = "none";
+            topnav.children[4].style.display = "none";
+            topnav.children[5].style.display = "none";
+            topnav.children[6].style.display = "none";
+	}
+
+</script>
+</html>
+

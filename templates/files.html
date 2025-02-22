@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+		<style>
+		.csv {
+			background-color: #44CF6C;
+		}
+
+		.py {
+			background-color: #2984ce;
+		}
+
+		.txt {
+			background-color: #DBE2EE;
+		}
+		</style>
+	</head>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a class="active" href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div style="display: flex; flex-flow: row wrap;">
+<!-- file -->
+		<div class="hcenter round {{filetype}}" style="margin-top: 10px; width: 28%;">
+			<h1 class="hcenter" style="font-size: 20px"> {{filename}} </h1>
+			<div style="display: flex;">
+				<div class="button" style="font-size: 16px;margin-right: 5%; width: 45%;" onclick="editFile('{{filename}}')">Edit</div>
+				<div class="button" style="font-size: 16px;width: 45%;" onclick="deleteFile('{{filename}}')">Delete</div>
+			</div>
+		</div>
+<!-- file end -->
+		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
+			<div class="button" style="width: 90%; height: 80%; align-items: center; display: flex" onclick="newFile()">
+			New File
+			</div>
+		</div>
+		</div>
+	</body>
+	<script>
+		function editFile(filename) {
+			window.location.href = "editfile/" + filename;
+		}
+
+		function deleteFile(filename) {
+			if (confirm("Are you sure you want to delete " + filename + "?")) {
+				fetch("/deletefile/" + filename, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+				}).then(response => {
+					window.location.href = "/files";
+				})
+			}
+		}
+
+		function newFile() {
+			const filename = prompt("Filename:");
+			fetch("/editfile/" + filename, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					content: ""
+				})
+			}).then(response => {
+				window.location.href = "/editfile/" + filename;
+			})
+		}
+	</script>
+</html>

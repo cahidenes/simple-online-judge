@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+	</head>
+<style>
+.done {
+	background-color: #44CF6C;
+}
+
+.partiallydone {
+	background-color: #cec929;
+}
+
+.notdone {
+	background-color: #DBE2EE;
+}
+</style>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	</body>
+	<div style="display: flex; flex-flow: row wrap;">
+<!-- question -->
+	<div class="round {{done}}" style="width: 35%; margin: 5%; text-align: center" onclick="window.location.href = '/{{type}}/{{id}}'">{{title}}</div>
+<!-- question end -->
+	</div>
+
+<script>
+
+	var topnav = document.getElementsByClassName("topnav")[0];
+	if ("{{type}}" == "question") {
+		topnav.children[0].classList.add("active");
+	} else {
+		topnav.children[1].classList.add("active");
+	}
+	if (topnav.children[topnav.children.length - 1].innerText != "admin") {
+            topnav.children[2].style.display = "none";
+            topnav.children[3].style.display = "none";
+            topnav.children[4].style.display = "none";
+            topnav.children[5].style.display = "none";
+            topnav.children[6].style.display = "none";
+	}
+
+	// refresh when back
+	window.onunload = function(){};
+	if (window.history.state != null && window.history.state.hasOwnProperty('historic')) {
+		if (window.history.state.historic == true) {
+			document.body.style.display = 'none';
+			window.history.replaceState({historic: false}, '');
+			window.location.reload();
+		} else {
+			window.history.replaceState({historic  : true}, '');
+		}
+	} else {
+		window.history.replaceState({historic  : true}, '');
+	}
+</script>
+</html>
+

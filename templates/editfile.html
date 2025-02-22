@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+		<style>
+			textarea {
+				font-size: 16px;
+			}
+		</style>
+	</head>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a class="active" href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div style="padding: 30px;">
+		<h1>{{filename}}</h1>
+		<div class="round">
+			<textarea style="width: 100%" rows="25" placeholder="" id="text">{{file_content}}</textarea>
+		</div>
+
+		<div class="button" onclick="editfile('{{filename}}')" > Save </div>
+	</div>
+	</body>
+	<script>
+		function editfile(id) {
+
+			var content = document.getElementById("text").value;
+
+			var file = {
+				content: content
+			}
+			fetch("/editfile/" + "{{filename}}", {
+				method: "POST",
+				body: JSON.stringify(file),
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then(response => response.json()).then(data => {
+				window.location.href = "/files";
+			})
+		}
+	
+	</script>
+</html>

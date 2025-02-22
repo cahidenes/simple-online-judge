@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/a11y-light.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+    <title>İşte İsar</title>
+    <style>
+        .hljs {
+            background: none !important;
+        }
+        .body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, monospace;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewcode {
+            flex: 1;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+            border-color: #112D4E;
+            font-family: monospace;
+            background-color: #DBE2EF;
+            margin-top: 10px;
+            padding: 20px;
+            font-size: 20px;
+            overflow: auto;
+        }
+
+        .container {
+            display: flex;
+            gap: 10px;
+        }
+        .circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 3px solid darkgray;
+            /* background-color: white; */
+            display: inline-block;
+        }
+        .filled {
+            background-color: darkgray;
+        }
+        .slider_container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="range"] {
+            width: 90%;
+        }
+        #display {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a class="active" href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div class="body">
+
+    <div style="display: flex; flex-flow: row wrap;">
+    <div class="container" id="circleContainer"></div>
+    <div style="margin-left: auto;" id="tarih"></div>
+    </div>
+
+    <div id="slider_container" class="slider_container">
+        <button onclick="moveLeft()">⬅</button>
+        <input type="range" id="slider" min="0" max="0" step="1" value="0" oninput="updateText()">
+        <button onclick="moveRight()">➡</button>
+    </div>
+
+	<div class="viewcode">
+        <pre><code id="code" class="language-python"></code></pre>
+	</div>
+
+    <div id="setpoints-div">
+        <input type="number" id="setpoints" placeholder="Points"/>
+        <button onclick="setPoints(-1)">Set Points</button>
+        <button onclick="setPoints(false)">False</button>
+        <button onclick="setPoints(true)">True</button>
+    </div>
+    </div>
+
+    <script>
+
+        var topnav = document.getElementsByClassName("topnav")[0];
+        const slider = document.getElementById("slider");
+        const slider_container = document.getElementById("slider_container");
+        const code = document.getElementById("code");
+        const tarih = document.getElementById("tarih");
+        slider_container.style.display = "none";
+
+        if (topnav.children[topnav.children.length - 1].innerText != "admin") {
+            document.getElementById("setpoints-div").style.display = "none";
+            topnav.children[2].style.display = "none";
+            topnav.children[3].style.display = "none";
+            topnav.children[4].style.display = "none";
+            topnav.children[5].style.display = "none";
+            topnav.children[6].style.display = "none";
+        }
+
+        const histories = [];
+
+        function updateText() {
+            code.innerHTML = histories[version_index][slider.value];
+            hljs.highlightAll();
+        }
+
+        function moveLeft() {
+            if (version_index < histories.length && slider.value > 0) {
+                slider.value--;
+                updateText();
+            }
+        }
+
+        function moveRight() {
+            if (version_index < histories.length && slider.value < histories[version_index].length - 1) {
+                slider.value++;
+                updateText();
+            }
+        }
+
+        const versions = {{codes}};
+        if (versions.length == 0) {
+            code.innerHTML = "No code found";
+        } else if (versions.length == 1) {
+            code.innerHTML = versions[0].code;
+            tarih.innerHTML = versions[0].time;
+            hljs.highlightAll();
+        } else {
+            console.log(versions);
+            var version_index = versions.length - 1;
+            if (!versions[version_index]) {
+                code.innerHTML = "No best solution";
+            } else {
+                code.innerHTML = versions[version_index].code;
+            }
+            hljs.highlightAll();
+
+
+            
+            require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+            require(["vs/editor/editor.main"], function () {
+                for (let i = 0; i < versions.length-1; i++) {
+                    const codes = [versions[i].history[0]];
+                    var line = 1;
+                    var col = 1;
+                    var j = 1;
+                    let model = monaco.editor.createModel(codes[0], "python");
+                    while (j < versions[i].history.length) {
+                        var startLine = line;
+                        var endLine = line;
+                        var startCol = col;
+                        var endCol = col;
+                        if (typeof versions[i].history[j] == "string") {
+                            model.applyEdits([{
+                                range: new monaco.Range(startLine, startCol, endLine, endCol),
+                                text: versions[i].history[j],
+                                forceMoveMarkers: true
+                            }]);
+                            col += versions[i].history[j].length;
+                            j++;
+                        } else {
+                            startLine = versions[i].history[j];
+                            startCol = versions[i].history[j+1];
+                            endLine = versions[i].history[j+2];
+                            endCol = versions[i].history[j+3];
+                            model.applyEdits([{
+                                range: new monaco.Range(startLine, startCol, endLine, endCol),
+                                text: versions[i].history[j+4],
+                                forceMoveMarkers: true
+                            }]);
+                            line = startLine;
+                            col = startCol + versions[i].history[j+4].length;
+                            j += 5;
+                        }
+                        codes.push(model.getValue());
+                    }
+                    histories.push(codes);
+                }
+            });
+
+            console.log(histories);
+
+            const container = document.getElementById("circleContainer");
+            
+            console.log(versions);
+
+            // Create circles
+            for (let i = 0; i < versions.length; i++) {
+                console.log(i);
+                const circle = document.createElement("div");
+                circle.classList.add("circle");
+                circle.dataset.index = i;
+                container.appendChild(circle);
+            }
+
+            function fillCircle(index) {
+                document.querySelectorAll(".circle").forEach(circle => {
+                    circle.classList.remove("filled"); // Remove previous fills
+                });
+                const circles = document.querySelectorAll(".circle");
+                if (index >= 0 && index < circles.length) {
+                    circles[index].classList.add("filled");
+                }
+            }
+
+            function updateSubmission(index) {
+                if (!versions[index]) {
+                    code.innerHTML = "No best solution";
+                } else {
+                    code.innerHTML = versions[index].code;
+                    tarih.innerText = versions[index].time;
+                }
+                fillCircle(index);
+                hljs.highlightAll();
+
+                if (index < histories.length) {
+                    slider_container.style.display = "block";
+                    slider.max = histories[index].length - 1;
+                    slider.value = slider.max;
+                } else {
+                    slider_container.style.display = "none";
+                }
+            }
+
+            updateSubmission(version_index);
+
+            document.addEventListener("keydown", function(event) {
+                if (event.key == "i") {
+                    if (version_index > 0) {
+                        version_index--;
+                    }
+                    updateSubmission(version_index)
+                } else if (event.key == "k") {
+                    if (version_index < versions.length - 1) {
+                        version_index++;
+                    }
+                    updateSubmission(version_index)
+                } else if (event.key == "j") {
+                    moveLeft();
+                } else if (event.key == "l") {
+                    moveRight();
+                }
+            });
+        }
+
+        function setPoints(points) {
+            if (points == -1) {
+                points = Number(document.getElementById("setpoints").value);
+            }
+            fetch('/judge', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "username": "{{username}}",
+                    "question_id": "{{question_id}}",
+                    "points": points
+                })
+            }).then(response => response.json()).then(data => {
+                if (data.result == "success") {
+                    window.location.href = "/scoreboard";
+                } else {
+                    alert(data.error);
+                }
+            })
+        }
+
+    </script>
+
+</body>

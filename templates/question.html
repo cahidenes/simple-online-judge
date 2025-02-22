@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+
+	<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+    <title>İşte İsar</title>
+    <style>
+        .body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #question-name {
+            font-size: 35px;
+            font-weight: bold;
+            margin: 20px;
+			text-align: center;
+        }
+
+		#score {
+			font-size: 16px;
+			text-align: center;
+		}
+
+        #question {
+            padding: 50px;
+                        padding-bottom: 0;
+                        font-size: 20px;
+                        padding-bottom: 0;
+                        font-size: 20px;
+                        -webkit-touch-callout: none;
+                        -webkit-user-select: none;
+                        -khtml-user-select: none;
+                        -moz-user-select: none;
+                        -ms-user-select: none;
+                        user-select: none;
+        }
+
+        .sample {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample2 {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample-input,
+        .sample-output {
+            flex: 1;
+			font-size: 30px;
+			margin: 20px;
+        }
+
+                .sample pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+                        width: 41vw;
+            font-family: monospace;
+                        background-color: #DBE2EE;
+                        margin-top: 10px;
+                        padding: 20px;
+                        font-size: 20px;
+                        overflow: auto;
+                }
+
+                .sample2 pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+                        width: 88vw;
+            font-family: monospace;
+                        background-color: #DBE2EE;
+                        margin-top: 10px;
+                        padding: 20px;
+                        font-size: 20px;
+                        overflow: auto;
+                }
+
+
+        #input-form {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+                        padding: 30px;
+        }
+
+        .user-input {
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #112D4E;
+            font-family: monospace;
+			display: block;
+			background-color: #F9F7F7;
+        }
+
+        #submit-btn {
+            padding: 10px;
+            font-size: 25px;
+                        background-color: #112D4E;
+            color: #fff;
+            cursor: pointer;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+        }
+    </style>
+</head>
+<body>
+
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a class="active" href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div class="body">
+
+	<div id="question-name">{{qname}}</div>
+	<i id="score">{{score}} Puan</i>
+
+<div data-unselectable="unselectable content" id="question">
+	<p>{{statement}}</p>
+
+	{{codegolfscoring}}
+</div>
+
+
+<!-- sample -->
+<div class="sample">
+    <div class="sample-input">
+        <strong>Sample Input:</strong>
+				<pre>{{input}}</pre>
+    </div>
+    <div class="sample-output">
+        <strong>Sample Output:</strong>
+				<pre>{{output}}</pre>
+    </div>
+</div>
+<!-- sample end -->
+
+<!-- guessinput -->
+<div id="guess-input" style="margin: 50px;">
+	<h2>Code:</h2>
+	<div class="user-input">
+		 <div id="presolution" style="width:100%;"></div>
+	</div>
+	<h2>Output:</h2>
+	<div class="round">
+		{{output}}
+	</div>
+	<h2>Input:</h2>
+	<div class="user-input round">
+		<textarea id="guessinput-input" style="border: none; width: 100%; background: #F9F7F7; font-size: 17px; font-family: monospace;" rows="10" placeholder="Write your input here"></textarea>
+	</div>
+	<div id="input-form">
+		<button id="submit-btn" onclick="submitAnswer('guessinput')">Submit</button>
+	</div>
+</div>
+<!-- guessinput end -->
+
+<!-- inputform -->
+<div id="input-form">
+	<div class="user-input">
+		<!-- <pre>{{presolution}}</pre> -->
+		 <div id="presolution" style="width:100%;"></div>
+		<!-- <textarea id="exact-input" style="border: none; width: 100%; background: #F9F7F7; font-size: 17px; font-family: monospace;" rows="10" placeholder="Write your code here">{{tmpsolution}}</textarea> -->
+		 <div id="editor" style="width:100%; min-height:100px;"></div>
+		 <div id="postsolution" style="width:100%;"></div>
+		<!-- <pre>{{postsolution}}</pre> -->
+	</div>
+    <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+</div>
+<!-- inputform end -->
+
+
+<div id="result">
+	<div id="error-group">
+		<div class="sample2">
+			<div class="sample-input">
+				<strong>Error:</strong>
+				<pre id="error-msg" class="long"></pre>
+			</div>
+		</div>
+	</div>
+	<div id="input-group">
+		<div class="sample2">
+			<div class="sample-input">
+				<strong>Input:</strong>
+				<pre id="input-msg"></pre>
+			</div>
+		</div>
+	</div>
+	<div id="sample-group">
+		<div class="sample" hidden>
+			<div class="sample-input">
+					<strong>Your Output:</strong>
+					<pre id="output-msg"></pre>
+			</div>
+			<div class="sample-output">
+					<strong>Expected Output:</strong>
+					<pre id="expected-msg"></pre>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+<script>
+
+	var topnav = document.getElementsByClassName("topnav")[0];
+	if (topnav.children[topnav.children.length - 1].innerText != "admin") {
+            topnav.children[2].style.display = "none";
+            topnav.children[3].style.display = "none";
+            topnav.children[4].style.display = "none";
+            topnav.children[5].style.display = "none";
+            topnav.children[6].style.display = "none";
+	}
+
+	let user_input_editor;
+	let history = [];
+	let cursorLine = 1;
+	let cursorColumn = 1;
+	require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+	require(["vs/editor/editor.main"], function () {
+		function createEditor(containerId, static, content) {
+			if (static && content == "") {
+				return;
+			}
+            const container = document.getElementById(containerId);
+			options = {
+				value: content,
+				language: "python",
+				theme: "vs",
+				automaticLayout: true,
+				fontSize: 20,
+				fontFamily: "Fira Code, Consolas, monospace", // Custom font
+				lineNumbers: "off",
+				scrollBeyondLastLine: false,
+				minimap: { enabled: false },
+				scrollbar: {
+					vertical: "hidden"
+				},
+			}
+			if (static) {
+				options.readOnly = true;
+				options.renderCursor = "none";
+				options.selectionHighlight = false;
+				options.renderLineHighlight = "none";
+				options.scrollbar = {
+					vertical: "hidden",
+					horizontal: "hidden"
+				},
+				options.overviewRulerLanes = 0,
+				options.scrollBeyondLastLine = false,
+				options.occurrencesHighlight = false,
+				options.renderIndentGuides = false
+			}
+            const editor = monaco.editor.create(container, options);
+
+            function updateHeight() {
+				const lineCount = editor.getModel().getLineCount(); // Get total lines
+				const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight) || 20; // Default line height
+
+				const contentHeight = lineCount * lineHeight + 10; // Add padding
+				container.style.height = contentHeight + "px";
+				editor.layout();
+			}
+
+            // Set initial height
+            updateHeight();
+
+			if (!static) {
+				history.push(content);
+				editor.onDidChangeModelContent((event) => {
+					updateHeight();
+					event.changes.forEach(change => {
+						if (change.range.startLineNumber == cursorLine &&
+							change.range.startColumn == cursorColumn &&
+							change.range.endLineNumber == cursorLine &&
+							change.range.endColumn == cursorColumn) {
+							history.push(change.text);
+							cursorColumn += change.text.length;
+						} else {
+							history.push(change.range.startLineNumber);
+							history.push(change.range.startColumn);
+							history.push(change.range.endLineNumber);
+							history.push(change.range.endColumn);
+							history.push(change.text);
+							cursorLine = change.range.startLineNumber;
+							cursorColumn = change.range.startColumn + change.text.length;
+						}
+						console.log(history);
+						console.log(cursorLine);
+						console.log(cursorColumn);
+					});
+				});
+			}
+
+            return editor;
+        }
+
+		if (document.getElementById("guess-input")) {
+			createEditor("presolution", true, "{{guessinputcode}}");
+			user_input_editor = document.getElementById("exact-input");
+		} else {
+			user_input_editor = createEditor("editor", false, "{{tmpsolution}}");
+			createEditor("presolution", true, "{{presolution}}");
+			createEditor("postsolution", true, "{{postsolution}}");
+		}
+
+		monaco.editor.defineTheme("myTheme", {
+			base: "vs",
+			inherit: true,
+			rules: [
+				{
+				"foreground": "#00800b",
+				"token": "string"
+				},
+				{
+				"foreground": "#633f00",
+				// "fontStyle": "bold",
+				"token": "keyword"
+				},
+				{
+				"foreground": "666666",
+				"token": "comment"
+				},
+				{
+				"foreground": "#0a007d",
+				// "fontStyle": "bold",
+				"token": "number"
+				},
+			],
+			colors: {
+				"editor.background": "#F9F7F7",
+			}
+		})
+
+		monaco.editor.setTheme("myTheme");
+	});
+
+	var errormsg = document.getElementById("error-msg");
+	var inputmsg = document.getElementById("input-msg");
+	var outputmsg = document.getElementById("output-msg");
+	var expectedmsg = document.getElementById("expected-msg");
+
+	var error = document.getElementById("error-group");
+	var input = document.getElementById("input-group");
+	var sample = document.getElementById("sample-group");
+
+	error.hidden = true;
+	input.hidden = true;
+	sample.hidden = true;
+
+	async function submitAnswer(type) {
+		var button = document.getElementById('submit-btn')
+		button.textContent = "Evaluating..."
+		button.disabled=true;
+
+        let userInput = ""
+		if (type == "guessinput") {
+			userInput = document.getElementById("guessinput-input").value;
+		} else {
+			userInput = user_input_editor.getValue();
+		}
+		console.log("User input = " + userInput)
+
+		error.hidden = true;
+		input.hidden = true;
+		sample.hidden = true;
+
+
+        try {
+			await fetch('', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({ input: userInput, history: history }),
+			}).then(response => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					alert("Error: " + response.statusText);
+				}
+			}).then(data => {
+				history = [userInput];
+				if (data.result == "success") {
+					button.style.backgroundColor = "#44CF6C"
+					button.textContent = "Correct!"
+					button.onclick = "";
+					button.disabled = true;
+					if (data.error) {
+						errormsg.innerText = data.error;
+						error.hidden = false;
+						document.getElementById("result").scrollIntoView({behavior: "smooth"});
+					}
+				} else if (data.result == "partial") {
+					button.style.backgroundColor = "#CEC929"
+					button.textContent = "Partially Correct!"
+					button.disabled = true;
+					setTimeout(resetButton, 5000);
+					if (data.error) {
+						errormsg.innerText = data.error;
+						error.hidden = false;
+						document.getElementById("result").scrollIntoView({behavior: "smooth"});
+					}
+				} else if (data.result == "submitted") {
+					button.style.backgroundColor = "#a142d7"
+					button.textContent = "Submitted!"
+					button.disabled = true;
+					setTimeout(resetButton, 5000);
+					if (data.error) {
+						errormsg.innerText = data.error;
+						error.hidden = false;
+						document.getElementById("result").scrollIntoView({behavior: "smooth"});
+					}
+				} else {
+					if (data.error) {
+						errormsg.innerText = data.error;
+						error.hidden = false;
+					}
+					if (data.input) {
+						inputmsg.innerText = data.input;
+						input.hidden = false;
+					}
+					if (data.output) {
+						outputmsg.innerText = data.output;
+						expectedmsg.innerText = data.expected;
+						sample.hidden = false;
+					}
+					document.getElementById("result").scrollIntoView({behavior: "smooth"});
+					button.style.backgroundColor = "#E51818"
+					button.textContent = "Wrong :("
+					button.disabled = true;
+					setTimeout(resetButton, 5000);
+					console.log(data);
+				}
+			})
+
+			// displayResult(success, userInput, output, expected);
+
+		} catch (error) {
+			alert(error);
+		}
+	function resetButton() {
+		button.style.backgroundColor = "#112D4E"
+		button.textContent = "Submit"
+		button.disabled = false;
+	}
+
+}
+</script>
+
+</body>
+</html>
+

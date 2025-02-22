@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+
+	<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+    <title>İşte İsar</title>
+    <style>
+        .body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-left: 20px solid white;
+            border-bottom: 10px solid transparent;
+        }
+
+        #question-name {
+            font-size: 35px;
+            font-weight: bold;
+            margin: 20px;
+			text-align: center;
+        }
+
+		#score {
+			font-size: 16px;
+			text-align: center;
+		}
+
+        #question {
+            padding: 50px;
+                        padding-bottom: 0;
+                        font-size: 20px;
+                        padding-bottom: 0;
+                        font-size: 20px;
+                        -webkit-touch-callout: none;
+                        -webkit-user-select: none;
+                        -khtml-user-select: none;
+                        -moz-user-select: none;
+                        -ms-user-select: none;
+                        user-select: none;
+        }
+
+        .sample {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample2 {
+            padding: 10px;
+            display: flex;
+        }
+
+        .sample-input,
+        .sample-output {
+            flex: 1;
+			font-size: 30px;
+			margin: 20px;
+        }
+
+                .sample pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+                        width: 41vw;
+            font-family: monospace;
+                        background-color: #DBE2EE;
+                        margin-top: 10px;
+                        padding: 20px;
+                        font-size: 20px;
+                        overflow: auto;
+                }
+
+                .sample2 pre {
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+                        width: 88vw;
+            font-family: monospace;
+                        background-color: #DBE2EE;
+                        margin-top: 10px;
+                        padding: 20px;
+                        font-size: 20px;
+                        overflow: auto;
+                }
+
+
+        #input-form {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+                        padding: 30px;
+        }
+
+        .user-input {
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+			border-color: #112D4E;
+            font-family: monospace;
+			display: block;
+			background-color: #F9F7F7;
+        }
+
+        #submit-btn {
+            padding: 10px;
+            font-size: 25px;
+                        background-color: #112D4E;
+            color: #fff;
+            cursor: pointer;
+            border: 3px solid #ccc;
+            border-radius: 10px; /* Make the border round */
+                        border-color: #112D4E;
+        }
+    </style>
+</head>
+<body>
+
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a href="/listresources">Edit Resources</a>
+		<a class="active" href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div class="body">
+
+	<div id="question-name">{{title}}</div>
+
+<div id="text" style="padding-left: 100px; padding-right: 100px; font-size: 18px;">
+	<p>{{text}}</p>
+</div>
+
+</div>
+</body>
+
+<script>
+
+	var topnav = document.getElementsByClassName("topnav")[0];
+	if (topnav.children[topnav.children.length - 1].innerText != "admin") {
+            topnav.children[2].style.display = "none";
+            topnav.children[3].style.display = "none";
+            topnav.children[4].style.display = "none";
+            topnav.children[5].style.display = "none";
+            topnav.children[6].style.display = "none";
+	}
+
+	let user_input_editor;
+	require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+	require(["vs/editor/editor.main"], function () {
+		function createEditor(container, language) {
+            var content = container.textContent;
+            container.innerHTML = "";
+			options = {
+				value: content,
+				language: language,
+				theme: "vs",
+				automaticLayout: true,
+				fontSize: 20,
+				fontFamily: "Fira Code, Consolas, monospace", // Custom font
+				lineNumbers: "off",
+				scrollBeyondLastLine: false,
+				minimap: { enabled: false },
+				scrollbar: {
+					vertical: "hidden"
+				},
+			}
+            const editor = monaco.editor.create(container, options);
+
+            function updateHeight() {
+				const lineCount = editor.getModel().getLineCount(); // Get total lines
+				const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight) || 20; // Default line height
+
+				const contentHeight = lineCount * lineHeight + 10; // Add padding
+				container.style.height = contentHeight + "px";
+				editor.layout();
+			}
+
+            // Set initial height
+            updateHeight();
+
+            // Update height when content changes
+            editor.onDidChangeModelContent(updateHeight);
+            return editor;
+        }
+
+        for (var i = 0; i < document.getElementsByClassName("editor").length; i++) {
+            createEditor(document.getElementsByClassName("editor")[i], "python");
+        }
+
+        for (var i = 0; i < document.getElementsByClassName("editor-input").length; i++) {
+            createEditor(document.getElementsByClassName("editor-input")[i], "plaintext");
+        }
+
+		monaco.editor.defineTheme("myTheme", {
+			base: "vs",
+			inherit: true,
+			rules: [
+				{
+				"foreground": "#00800b",
+				"token": "string"
+				},
+				{
+				"foreground": "#633f00",
+				// "fontStyle": "bold",
+				"token": "keyword"
+				},
+				{
+				"foreground": "666666",
+				"token": "comment"
+				},
+				{
+				"foreground": "#0a007d",
+				// "fontStyle": "bold",
+				"token": "number"
+				},
+			],
+			colors: {
+				"editor.background": "#F9F7F7",
+			}
+		})
+		monaco.editor.setTheme("myTheme");
+	});
+
+    function runCode(button) {
+        let container = button.parentNode.previousElementSibling;
+        let editorContent = container.querySelector(".editor")?.innerText.trim().replace(/\u00A0/g, ' ') || "";
+        let userInputContent = container.querySelectorAll(".user-input")[1]?.innerText.trim().replace(/\u00A0/g, ' ') || "";
+        let output = button.nextElementSibling;
+        output.innerText = "Running...";
+
+        // console.log("Editor Content:", editorContent);
+        // console.log("User Input Content:", userInputContent);
+
+        fetch('/samplerun', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "solution": editorContent,
+                "input": userInputContent
+            })
+        }).then(response => response.json()).then(data => {
+            if (data["error"]) {
+                output.innerText = data["error"];
+            } else {
+            output.innerText = data["output"];
+            }
+        })
+    }
+
+
+</script>
+
+</body>
+</html>
+

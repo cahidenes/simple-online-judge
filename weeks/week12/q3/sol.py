@@ -1,2 +1,0 @@
-print('Tebrikler! Bu asamaya kadar geldin, seni tebrik ediyorum. Umarim bu egitim senin icin faydali olmustur. Hayatinin geri kalan kisminda insallah faydali olur. Dijital dunyadan karsilastigin sorunlari python ile cok kolay bir sekilde cozebilecegini unutma. Yapmak istedigin seyleri, karsilastigin hatalari internette aratarak cozumunu ogrenebilirsin. Bu derse biraz da ogrenmeyi ogrendik. Ogrenmek okulun sonuna kadar degil, olume kadar. Bu yuzden bir seyler arastirmayi, dokumantasyon okumayi sakin ihmal etme. Allah\'a emanet ol. ')
-

@@ -1,0 +1,110 @@
+.round {
+	border: 3px solid #ccc;
+	border-radius: 10px; /* Make the border round */
+	border-color: #112D4E;
+	font-family: monospace;
+	background-color: #DBE2EF;
+	margin-top: 10px;
+	padding: 20px;
+	font-size: 20px;
+	overflow: auto;
+}
+
+
+.button {
+	margin-top: 10px;
+	padding: 10px;
+	font-size: 30px;
+	background-color: #112D4E;
+	color: #fff;
+	cursor: pointer;
+	border: 3px solid #ccc;
+	border-radius: 10px; /* Make the border round */
+	border-color: #112D4E;
+	text-align: center;
+}
+
+.hcenter {
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.fit {
+  width: 100%;
+}
+
+.topnav {
+	background-color: #3F72AF;
+	font-size: 20px;
+	overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #112D4E;
+  color: white;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: #112D4E;
+  color: white;
+}
+
+.topnav a.right {
+  float: right;
+  font-size: 18px;
+}
+
+.progress-button {
+	width: 73vw;
+	padding: 30px;
+	text-align: center;
+	font-size: 30px;
+	font-weight: bold;
+	border: 5px solid #57886C; /* Add a border */
+	border-radius: 10px; /* Make the border round */
+	border-color: #000;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	margin-bottom: 50px; /* Adjust the margin as needed */
+	margin-left: 5vw;
+	margin-right: 2vw;
+}
+
+.progress-button:disabled,
+.progress-button[disabled]{
+    color: #666666;
+	border: 5px solid #666; /* Add a border */
+}
+
+
+.progress-button-container {
+	display: flex;
+	align-items: center;
+	margin-bottom: 5px; /* Adjust the margin as needed */
+}
+
+body {
+	background-color: #F9F7F7;
+}

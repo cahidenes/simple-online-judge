@@ -1,8 +1,0 @@
-saat1 = Saat(saat=9, dakika=46)
-saat2 = Saat(dakika=20)
-print(saat1 + saat2)
-
-saat3 = Saat(saat=10)
-print(saat3*3)
-
-print(saat1 + saat2 == Saat(saat=10, dakika=6))

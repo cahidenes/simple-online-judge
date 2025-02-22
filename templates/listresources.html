@@ -1,0 +1,58 @@
+<html>
+	<head>
+		<title>İşte İsar</title>
+		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+	</head>
+	<body>
+	<div class="topnav">
+		<a href="/">Home</a>
+		<a href="/resources">Resources</a>
+		<a class="active" href="/listresources">Edit Resources</a>
+		<a href="/listquestions">Questions</a>
+		<a href="/listusers">Users</a>
+		<a href="/listsections">Sections</a>
+		<a href="/files">Files</a>
+		<a href="/scoreboard">Scoreboard</a>
+		<a class="right" href="/login">{{current_user}}</a>
+	</div>
+	<div style="display: flex; flex-flow: row wrap;">
+<!-- resource -->
+		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
+			<h1 class="hcenter" style="font-size: 20px"> {{title}} </h1>
+			<p style="font-size: 16px;" class="hcenter"><i>{{section}}</i></p>
+			<p style="font-size: 16px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical"> {{text}} </p>
+			<div style="display: flex;">
+				<div class="button" style="font-size: 16px;margin-right: 5%; width: 45%;" onclick="editResource('{{id}}')">Edit</div>
+				<div class="button" style="font-size: 16px;width: 45%;" onclick="deleteResource('{{title}}', '{{id}}')">Delete</div>
+			</div>
+		</div>
+<!-- resource end -->
+		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
+			<div class="button" style="width: 90%; height: 80%; align-items: center; display: flex" onclick="window.location.href = 'addresource'">
+			Add Resource
+			</div>
+		</div>
+		</div>
+	</body>
+	<script>
+		function editResource(id) {
+			window.location.href = "editresource/" + id;
+		}
+
+		function deleteResource(title, id) {
+			if (confirm("Are you sure you want to delete " + title + "?")) {
+				fetch("/deleteresource/" + id, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						id: id
+					})
+				}).then(response => {
+					window.location.href = "/listresources";
+				})
+			}
+		}
+	</script>
+</html>
