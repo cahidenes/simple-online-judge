@@ -996,6 +996,16 @@ def submit_judge(request: Request, body: Any = Body(None)):
     elif body['points'] == False:
         body['points'] = 0
 
+    if body['question_id'] not in users[body['username']]['solves']:
+        print('here')
+        users[body['username']]['solves'][body['question_id']] = {
+            'best_solution': {'time': '', 'code': ''}, 
+            'tries': [{
+                'time': '',
+                'code': '',
+                'history': ['']
+            }]}
+        
     users[body['username']]['solves'][body['question_id']]['waiting'] = False
     users[body['username']]['solves'][body['question_id']]['points'] = body['points']
     if body['points'] == questions[body['question_id']]['points']:
