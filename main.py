@@ -75,6 +75,10 @@ def remove_templates(content):
         content = before + after
     return content
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse('static/favicon.ico')
+
 @app.get('/files/{dosya}')
 def download(request: Request, dosya: str):
     return FileResponse(f'files/{dosya}')
@@ -919,7 +923,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             output = get('output.txt')
             if output.strip() != testcase['output'].strip():
                 if testcase['show']:
-                    return JSONResponse({'input': get('input.txt'), 'output': get('output.txt'), 'expected': get('expected.txt')}) 
+                    return JSONResponse({'input': get('input.txt'), 'output': get('output.txt'), 'expected': testcase['output'].strip()}) 
                 else:
                     return JSONResponse({'error': 'Your output is not correct on a hidden testcase'})
         points = 1
