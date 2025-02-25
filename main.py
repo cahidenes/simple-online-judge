@@ -38,14 +38,35 @@ class Answer(BaseModel):
     input: str
     history: List[Union[int, str]]
 
-with open('data/users.json') as f:
+DATA_DIR = os.path.expanduser('~/.config/simple-online-judge/')
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+    os.system("cp data/* " + DATA_DIR)
+
+with open(DATA_DIR + 'users.json') as f:
     users = json.load(f)
-with open('data/questions.json') as f:
+def save_users():
+    with open(DATA_DIR + 'users.json', 'w') as f:
+        json.dump(users, f)
+
+with open(DATA_DIR + 'questions.json') as f:
     questions = json.load(f)
-with open('data/sections.json') as f:
+def save_questions():
+    with open(DATA_DIR + 'questions.json', 'w') as f:
+        json.dump(questions, f)
+
+with open(DATA_DIR + 'sections.json') as f:
     sections = json.load(f)
-with open('data/resources.json') as f:
+def save_sections():
+    with open(DATA_DIR + 'sections.json', 'w') as f:
+        json.dump(sections, f)
+
+with open(DATA_DIR + 'resources.json') as f:
     resources = json.load(f)
+def save_resources():
+    with open(DATA_DIR + 'resources.json', 'w') as f:
+        json.dump(resources, f)
+
 
 def handle_user(request: Request):
     user = request.cookies.get('username')
@@ -173,8 +194,7 @@ def adduserpost(request: Request, userdata: UserData):
     if userdata.username in users:
         return JSONResponse(content={'error': 'Username already exists'}, status_code=400)
     users[userdata.username] = {'password': userdata.password, 'name': userdata.name, 'visible': userdata.visible, 'solves': {}}
-    with open('data/users.json', 'w') as f:
-        json.dump(users, f, indent=4)
+    save_users()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.get('/listusers')
@@ -221,9 +241,7 @@ def edituser(request: Request, username: str, userdata: UserData):
     solves = users[username]['solves']
     del users[username]
     users[userdata.username] = {'password': userdata.password, 'name': userdata.name, 'visible': userdata.visible, 'solves': solves}
-    users
-    with open('data/users.json', 'w') as f:
-        json.dump(users, f, indent=4)
+    save_users()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.get('/addquestion')
@@ -350,8 +368,7 @@ def addquestionpost(request: Request, question: Any = Body(None)):
     if question['type'] == 'guessinput' and not question['title'].endswith('🔍'):
         question['title'] += ' 🔍'
 
-    with open('data/questions.json', 'w') as f:
-        json.dump(questions, f, indent=4)
+    save_questions()
     return JSONResponse(content={'success': True}, status_code=200)
 
 
@@ -426,8 +443,7 @@ def deletequestion(request: Request, question_id: str):
     if user != 'admin':
         return RedirectResponse(url='/')
     del questions[question_id]
-    with open('data/questions.json', 'w') as f:
-        json.dump(questions, f, indent=4)
+    save_questions()
     content = replace_keywords(content, current_user=user)
     return JSONResponse(content={'success': True}, status_code=200)
 
@@ -500,8 +516,7 @@ def addresourcepost(request: Request, resource: Any = Body(None)):
         id = resource['id']
     resources[id] = resource
 
-    with open('data/resources.json', 'w') as f:
-        json.dump(resources, f, indent=4)
+    save_resources()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.get('/listresources')
@@ -534,8 +549,7 @@ def deleteresource(request: Request, resource_id: str):
     if user != 'admin':
         return RedirectResponse(url='/')
     del resources[resource_id]
-    with open('data/resources.json', 'w') as f:
-        json.dump(resources, f, indent=4)
+    save_resources()
     content = replace_keywords(content, current_user=user)
     return JSONResponse(content={'success': True}, status_code=200)
 
@@ -646,8 +660,7 @@ def addsection(request: Request):
         return RedirectResponse(url='/')
     id = str(max(map(int, sections.keys())) + 1) if sections.keys() else '0'
     sections[id] = {'title': 'New Section', 'visible': False, 'active': False, 'resource': False, 'order': 0}
-    with open('data/sections.json', 'w') as f:
-        json.dump(sections, f, indent=4)
+    save_sections()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.post('/savesections')
@@ -659,8 +672,7 @@ def savesections(request: Request, new_sections: Any = Body(None)):
         return RedirectResponse(url='/')
     global sections
     sections = new_sections
-    with open('data/sections.json', 'w') as f:
-        json.dump(sections, f, indent=4)
+    save_sections()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.post('/deletesection/{id}')
@@ -783,8 +795,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
     if question_id not in users[user]['solves']:
         users[user]['solves'][question_id] = {'points': 0, 'best_solution': None, 'tries': []}
     users[user]['solves'][question_id]['tries'].append({'time': time, 'code': answer.input, 'history': answer.history})
-    with open('data/users.json', 'w') as f:
-        json.dump(users, f, indent=4)
+    save_users()
 
     # Check if forbidden statements are used
     try:
@@ -955,14 +966,12 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                       f"Score: {int(points * questions[question_id]['points'])}/{questions[question_id]['points']}"
     elif question['type'] == 'manual':
         users[user]['solves'][question_id]['waiting'] = True
-        with open('data/users.json', 'w') as f:
-            json.dump(users, f, indent=4)
+        save_users()
         return JSONResponse({'result': 'submitted', 'error': 'Your solution is submitted and will be evaluated'})
 
     users[user]['solves'][question_id]['points'] = int(points * questions[question_id]['points'])
     users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
-    with open('data/users.json', 'w') as f:
-        json.dump(users, f, indent=4)
+    save_users()
     response = {}
     if msg:
         response['error'] = msg
@@ -992,8 +1001,7 @@ def submit_judge(request: Request, body: Any = Body(None)):
     if body['points'] == questions[body['question_id']]['points']:
         users[body['username']]['solves'][body['question_id']]['best_solution'] = users[body['username']]['solves'][body['question_id']]['tries'][-1]
     
-    with open('data/users.json', 'w') as f:
-        json.dump(users, f, indent=4)
+    save_users()
     
     return JSONResponse({'result': 'success'})
 
