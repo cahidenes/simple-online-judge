@@ -128,12 +128,13 @@ def get_sections(request: Request, type):
     section_template, before, after = get_group(content, 'section')
     sorted_sections = sorted(sections.items(), key=lambda x: x[1]['order'])
     for section_id, section in sorted_sections:
-        if not section['visible']:
+        if user != 'admin' and not section['visible']:
             continue
         if type == 'questions' and section['resource']:
             continue
         if type == 'resources' and not section['resource']:
             continue
+
         total = 0
         done = 0
         for question_id in questions:
@@ -144,10 +145,11 @@ def get_sections(request: Request, type):
                 done += users[user]['solves'][question_id]['points']
         before += replace_keywords(section_template,
                                    section_id=section_id,
-                                   disabled='' if section['active'] else 'disabled',
+                                   disabled='' if user == 'admin' or section['active'] else 'disabled',
                                    name=section['title'],
                                    percent='0' if total == 0 else str(100 * done // total),
-                                   label=f'{done} / {total}')
+                                   label=f'{done} / {total}',
+                                   visible='<img src="/files/visible.png"/>' if not section['visible'] else ('' if (section['active'] or user != 'admin') else '<img src="/files/disabled.png"/>'))
 
     content = before + after
     return HTMLResponse(content=content)
