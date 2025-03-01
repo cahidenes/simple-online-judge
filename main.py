@@ -719,7 +719,8 @@ def getsection(request: Request, section_id: str):
                 continue
             before += replace_keywords(question_template, id=resource_id, title=resources[resource_id]['title'], done='notdone')
     else:
-        for question_id in questions:
+        sorted_questions = sorted(questions.items(), key=lambda x: x[1]['points'])
+        for question_id, _ in sorted_questions:
             if questions[question_id]['section'] != section_id:
                 continue
             done = 'notdone'
