@@ -26,8 +26,14 @@
 			text-align: center;
         }
 
-		#score {
+		.score {
 			font-size: 16px;
+			text-align: center;
+		}
+
+		.adminsolution {
+			font-weight: bold;
+			font-size: 14px;
 			text-align: center;
 		}
 
@@ -137,7 +143,8 @@
 	<div class="body">
 
 	<div id="question-name">{{qname}}</div>
-	<i id="score">{{score}} Puan</i>
+	<i class="score">{{score}} Puan</i>
+	<div class="adminsolution">{{solution}}</div>
 
 <div data-unselectable="unselectable content" id="question">
 	<p>{{statement}}</p>
