@@ -1037,8 +1037,9 @@ def get_scoreboard(request: Request):
 
     sorted_sections.sort()
     for _, section_id in sorted_sections:
-        for question_id in questions:
-            if questions[question_id]['section'] == section_id:
+        sorted_questions = sorted(questions.items(), key=lambda q: q[1]['points'])
+        for question_id, question in sorted_questions:
+            if question['section'] == section_id:
                 active_questions.append(question_id)
 
     question_template, before, after = get_group(content, 'question')
