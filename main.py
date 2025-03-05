@@ -1054,12 +1054,13 @@ def get_scoreboard(request: Request):
         if section['visible']:
             sorted_sections.append((section['order'], section_id))
 
-    sorted_sections.sort()
     for _, section_id in sorted_sections:
         sorted_questions = sorted(questions.items(), key=lambda q: q[1]['points'])
         for question_id, question in sorted_questions:
             if question['section'] == section_id:
                 active_questions.append(question_id)
+    
+    active_questions.reverse()
 
     question_template, before, after = get_group(content, 'question')
     for question_id in active_questions:
