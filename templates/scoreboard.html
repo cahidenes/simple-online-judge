@@ -144,9 +144,19 @@
             topnav.children[6].style.display = "none";
 	}
 
-	setTimeout(function() {
-        location.reload();
-    }, 10000); 
+	function update() {
+		fetch("/scoreboard", {
+			method: "GET",
+		}).then(response => {
+			return response.text();
+		}).then(text => {
+			document.body.innerHTML = text;
+		})
+		setTimeout(update, 5000); 
+	}
+	if ("{{current_user}}" == "admin") {
+		update();
+	}
 </script>
 </body>
 
