@@ -670,7 +670,7 @@ def addsection(request: Request):
     if user != 'admin':
         return RedirectResponse(url='/')
     id = str(max(map(int, sections.keys())) + 1) if sections.keys() else '0'
-    sections[id] = {'title': 'New Section', 'visible': False, 'active': False, 'resource': False, 'order': 0}
+    sections[id] = {'title': 'New Section', 'visible': False, 'active': False, 'points': False, 'resource': False, 'order': 0}
     save_sections()
     return JSONResponse(content={'success': True}, status_code=200)
 
