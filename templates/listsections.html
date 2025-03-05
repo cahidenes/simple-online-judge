@@ -3,6 +3,11 @@
 	<head>
 		<title>İşte İsar</title>
 		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+		<style>
+			.resource {
+				background-color: #dfefdc;
+			}
+		</style>
 	</head>
 	<body>
 		<div class="topnav">
@@ -18,7 +23,7 @@
 		</div>
 		<div id="section_list" style="display: flex; flex-flow: row wrap;">
 <!-- section -->
-			<div class="hcenter round" style="margin-top: 30px; width: 45%;">
+			<div class="hcenter round {{type}}" style="margin-top: 30px; width: 45%;">
 				<input type="hidden" name="id" id="id" value="{{id}}">
 				<input style="font-size: 30px; padding: 10px; width: 90%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required> <br>
 				Questions: {{questions}} <br>

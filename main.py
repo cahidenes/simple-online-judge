@@ -652,6 +652,7 @@ def listsections(request: Request):
         section_content = replace_keywords(section_template,
                                            id=id,
                                            title=section['title'],
+                                           type='resource' if section['resource'] else '',
                                            visible='checked' if section['visible'] else '',
                                            active='checked' if section['active'] else '',
                                            points='checked' if section['points'] else '',
