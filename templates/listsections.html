@@ -24,6 +24,7 @@
 				Questions: {{questions}} <br>
 				Visible: <input type="checkbox" name="visible" id="visible" {{visible}}> <br>
 				Active: <input type="checkbox" name="active" id="active" {{active}}> <br>
+				Points: <input type="checkbox" name="points" id="points" {{points}}> <br>
 				Resource: <input type="checkbox" name="resource" id="resource" {{resource}}> <br>
 				Order: <input type="number" name="order" id="order" value="{{order}}"> <br>
 				<div class="button" onclick="del('{{id}}')">Delete</div>
@@ -75,8 +76,9 @@
 					title: section.children[1].value,
 					visible: section.children[4].checked,
 					active: section.children[6].checked,
-					resource: section.children[8].checked,
-					order: Number(section.children[10].value)
+					points: section.children[8].checked,
+					resource: section.children[10].checked,
+					order: Number(section.children[12].value)
 				}
 			}
 			console.log(sections);

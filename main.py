@@ -143,13 +143,21 @@ def get_sections(request: Request, type):
             total += questions[question_id]['points']
             if question_id in users[user]['solves']:
                 done += users[user]['solves'][question_id]['points']
+        icons = ''
+        if not section['visible']:
+            icons += '<img src="/files/visible.png"/>'
+        elif not section['active']:
+            icons += '<img src="/files/disabled.png"/>'
+        elif not section['points']:
+            icons += '<img src="/files/nopoint.png"/>'
+            
         before += replace_keywords(section_template,
                                    section_id=section_id,
                                    disabled='' if user == 'admin' or section['active'] else 'disabled',
                                    name=section['title'],
                                    percent='0' if total == 0 else str(100 * done // total),
                                    label=f'{done} / {total}',
-                                   visible='<img src="/files/visible.png"/>' if not section['visible'] else ('' if (section['active'] or user != 'admin') else '<img src="/files/disabled.png"/>'))
+                                   visible=icons)
 
     content = before + after
     return HTMLResponse(content=content)
@@ -646,6 +654,7 @@ def listsections(request: Request):
                                            title=section['title'],
                                            visible='checked' if section['visible'] else '',
                                            active='checked' if section['active'] else '',
+                                           points='checked' if section['points'] else '',
                                            resource='checked' if section['resource'] else '',
                                            order=section['order'],
                                            questions=', '.join(question_list))
@@ -790,7 +799,8 @@ def evaluate(request: Request, question_id: str, answer: Answer):
     question = questions[question_id]
     section = sections[question['section']]
     if not section['active'] or not section['visible']:
-        return JSONResponse({'error': 'Not allowed'})
+        if user != 'admin':
+            return JSONResponse({'error': 'Not allowed'})
 
     # Save attempt to tries
     time = datetime.now()
@@ -968,13 +978,15 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                 msg = f"Character count: {length}\n" \
                       f"Score: {int(points * questions[question_id]['points'])}/{questions[question_id]['points']}"
     elif question['type'] == 'manual':
-        users[user]['solves'][question_id]['waiting'] = True
-        save_users()
+        if section['points']:
+            users[user]['solves'][question_id]['waiting'] = True
+            save_users()
         return JSONResponse({'result': 'submitted', 'error': 'Your solution is submitted and will be evaluated'})
 
-    users[user]['solves'][question_id]['points'] = int(points * questions[question_id]['points'])
-    users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
-    save_users()
+    if section['points']:
+        users[user]['solves'][question_id]['points'] = int(points * questions[question_id]['points'])
+        users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
+        save_users()
     response = {}
     if msg:
         response['error'] = msg
