@@ -1102,7 +1102,18 @@ def viewcode(request: Request, username: str, question_id: str):
         content = f.read()
     content = replace_keywords(content, current_user=user, username=username, question_id=question_id)
     code = []
-    if question_id in users[username]['solves']:
+    if username == 'solution':
+        if 'solution' in questions[question_id]:
+            code = [{
+                'time': 'Solution',
+                'code': questions[question_id]['solution']
+                }]
+        else:
+            code = [{
+                'time': 'Solution',
+                'code': 'No solution provided'
+                }]
+    elif question_id in users[username]['solves']:
         code = [users[username]['solves'][question_id]['best_solution']]
         if user == 'admin':
             code = users[username]['solves'][question_id]['tries'] + code
