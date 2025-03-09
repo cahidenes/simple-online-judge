@@ -317,9 +317,6 @@
 							cursorLine = change.range.startLineNumber;
 							cursorColumn = change.range.startColumn + change.text.length;
 						}
-						console.log(history);
-						console.log(cursorLine);
-						console.log(cursorColumn);
 					});
 				});
 			}
@@ -391,81 +388,101 @@
 		} else {
 			userInput = user_input_editor.getValue();
 		}
-		console.log("User input = " + userInput)
 
 		error.hidden = true;
 		input.hidden = true;
 		sample.hidden = true;
 
-
-        try {
-			await fetch('', {
+		try {
+			var response = await fetch('', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify({ input: userInput, history: history }),
-			}).then(response => {
-				if (response.ok) {
-					return response.json();
-				} else {
-					alert("Error: " + response.statusText);
-				}
-			}).then(data => {
-				history = [userInput];
-				if (data.result == "success") {
-					button.style.backgroundColor = "#44CF6C"
-					button.textContent = "Correct!"
-					button.onclick = "";
-					button.disabled = true;
-					if (data.error) {
-						errormsg.innerText = data.error;
-						error.hidden = false;
-						document.getElementById("result").scrollIntoView({behavior: "smooth"});
-					}
-				} else if (data.result == "partial") {
-					button.style.backgroundColor = "#CEC929"
-					button.textContent = "Partially Correct!"
-					button.disabled = true;
-					setTimeout(resetButton, 5000);
-					if (data.error) {
-						errormsg.innerText = data.error;
-						error.hidden = false;
-						document.getElementById("result").scrollIntoView({behavior: "smooth"});
-					}
-				} else if (data.result == "submitted") {
-					button.style.backgroundColor = "#a142d7"
-					button.textContent = "Submitted!"
-					button.disabled = true;
-					setTimeout(resetButton, 5000);
-					if (data.error) {
-						errormsg.innerText = data.error;
-						error.hidden = false;
-						document.getElementById("result").scrollIntoView({behavior: "smooth"});
-					}
-				} else {
-					if (data.error) {
-						errormsg.innerText = data.error;
-						error.hidden = false;
-					}
-					if (data.input) {
-						inputmsg.innerText = data.input;
-						input.hidden = false;
-					}
-					if (data.output) {
-						outputmsg.innerText = data.output;
-						expectedmsg.innerText = data.expected;
-						sample.hidden = false;
-					}
-					document.getElementById("result").scrollIntoView({behavior: "smooth"});
-					button.style.backgroundColor = "#E51818"
-					button.textContent = "Wrong :("
-					button.disabled = true;
-					setTimeout(resetButton, 5000);
-					console.log(data);
-				}
 			})
 
-			// displayResult(success, userInput, output, expected);
+			if (!response.ok) {
+				alert("Error: " + response.statusText);
+			}
+			var data = {}
+			if (response.headers.get("stream") == "true") {
+				console.log(response);
+				const reader = response.body.getReader();
+				const decoder = new TextDecoder();
+				
+				while (true) {
+					const { value, done } = await reader.read();
+					if (done) break;
 
+					const chunk = decoder.decode(value, { stream: true });
+					console.log("Received chunk:", chunk);
+
+					// Process JSON objects line by line
+					chunk.split("\n").forEach(line => {
+						if (line.trim()) {
+							data = JSON.parse(line);
+							if (data["checking"]) {
+								button.textContent = "Evaluating " + data["checking"] + "/100";
+							}
+						}
+					});
+				}
+			} else {
+				data = await response.json();
+				console.log("Stream değil");
+				console.log(data);
+			}
+
+			history = [userInput];
+			if (data.result == "success") {
+				button.style.backgroundColor = "#44CF6C"
+				button.textContent = "Correct!"
+				button.onclick = "";
+				button.disabled = true;
+				if (data.error) {
+					errormsg.innerText = data.error;
+					error.hidden = false;
+					document.getElementById("result").scrollIntoView({behavior: "smooth"});
+				}
+			} else if (data.result == "partial") {
+				button.style.backgroundColor = "#CEC929"
+				button.textContent = "Partially Correct!"
+				button.disabled = true;
+				setTimeout(resetButton, 5000);
+				if (data.error) {
+					errormsg.innerText = data.error;
+					error.hidden = false;
+					document.getElementById("result").scrollIntoView({behavior: "smooth"});
+				}
+			} else if (data.result == "submitted") {
+				button.style.backgroundColor = "#a142d7"
+				button.textContent = "Submitted!"
+				button.disabled = true;
+				setTimeout(resetButton, 5000);
+				if (data.error) {
+					errormsg.innerText = data.error;
+					error.hidden = false;
+					document.getElementById("result").scrollIntoView({behavior: "smooth"});
+				}
+			} else {
+				if (data.error) {
+					errormsg.innerText = data.error;
+					error.hidden = false;
+				}
+				if (data.input) {
+					inputmsg.innerText = data.input;
+					input.hidden = false;
+				}
+				if (data.output) {
+					outputmsg.innerText = data.output;
+					expectedmsg.innerText = data.expected;
+					sample.hidden = false;
+				}
+				document.getElementById("result").scrollIntoView({behavior: "smooth"});
+				button.style.backgroundColor = "#E51818"
+				button.textContent = "Wrong :("
+				button.disabled = true;
+				setTimeout(resetButton, 5000);
+			}
 		} catch (error) {
 			alert(error);
 		}

@@ -1,6 +1,6 @@
 from typing import Union, Annotated, Any, List
 from fastapi import FastAPI, Request, Body, Depends, HTTPException, status, APIRouter, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import json
@@ -865,30 +865,44 @@ def evaluate(request: Request, question_id: str, answer: Answer):
         with open(dir + '/generator.py', 'w') as f:
             f.write(question['generator'])
 
+        def checking_stream():
+            for i in range(100):
+                yield json.dumps({'checking': i+1}) + '\n'
+                result = os.system(f'python3 {dir}/generator.py > {dir}/input.txt 2> {dir}/generator_error.txt')
+                if result:
+                    yield json.dumps({'error': 'An error occured when generating input: ' + get('generator_error.txt')}) + '\n'
+                    return
 
-        for i in range(100):
-            result = os.system(f'python3 {dir}/generator.py > {dir}/input.txt 2> {dir}/generator_error.txt')
-            if result:
-                return JSONResponse({'error': 'An error occured when generating input: ' + get('generator_error.txt')})
+                with open(f'{dir}/output.txt', 'w') as f:
+                    f.write('No output is generated')
+                with open(f'{dir}/error.txt', 'w') as f:
+                    f.write('No error is generated')
+                result = os.system(f'timeout 1s python3 {dir}/code.py < {dir}/input.txt > {dir}/output.txt 2> {dir}/error.txt')
+                if result:
+                    if result == 31744:
+                        yield json.dumps({'error': 'Took too long to execute', 'input': get('input.txt')}) + '\n'
+                        return
+                    else:
+                        yield json.dumps({'error': get('error.txt'), 'input': get('input.txt')}) + '\n'
+                        return
 
-            with open(f'{dir}/output.txt', 'w') as f:
-                f.write('No output is generated')
-            with open(f'{dir}/error.txt', 'w') as f:
-                f.write('No error is generated')
-            result = os.system(f'timeout 1s python3 {dir}/code.py < {dir}/input.txt > {dir}/output.txt 2> {dir}/error.txt')
-            if result:
-                if result == 31744:
-                    return JSONResponse({'error': 'Took too long to execute', 'input': get('input.txt')})
-                else:
-                    return JSONResponse({'error': get('error.txt'), 'input': get('input.txt')})
+                result = os.system(f'python3 {dir}/solution.py < {dir}/input.txt > {dir}/expected.txt 2> {dir}/solution_error.txt')
+                if result:
+                    yield json.dumps({'error': 'An error occured when generating solution: ' + get('solution_error.txt')}) + '\n'
+                    return
 
-            result = os.system(f'python3 {dir}/solution.py < {dir}/input.txt > {dir}/expected.txt 2> {dir}/solution_error.txt')
-            if result:
-                return JSONResponse({'error': 'An error occured when generating solution: ' + get('solution_error.txt')})
+                if os.system(f'diff -w {dir}/output.txt {dir}/expected.txt > /dev/null'):
+                    yield json.dumps({'input': get('input.txt'), 'output': get('output.txt'), 'expected': get('expected.txt')})  + '\n'
+                    return
 
-            if os.system(f'diff -w {dir}/output.txt {dir}/expected.txt > /dev/null'):
-                return JSONResponse({'input': get('input.txt'), 'output': get('output.txt'), 'expected': get('expected.txt')}) 
-        points = 1
+            if section['points']:
+                users[user]['solves'][question_id]['points'] = questions[question_id]['points']
+                users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
+                save_users()
+            
+            yield json.dumps({'result': 'success'}) + '\n'
+        return StreamingResponse(checking_stream(), media_type="application/json", headers={"stream": "true"})
+
     elif question['type'] == 'checker':
         with open(dir + '/checker.py', 'w') as f:
             f.write(question['checker'])
