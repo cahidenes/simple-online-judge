@@ -410,7 +410,18 @@ def samplerun(request: Request, sample: Sample):
     if sample.generator:
         with open(f'tmp/{user}/generator.py', 'w') as f:
             f.write(sample.generator)
-        os.system(f'python3 tmp/{user}/generator.py > tmp/{user}/input.txt')
+        result = os.system(f'timeout 5s python3 tmp/{user}/generator.py > tmp/{user}/input.txt 2> tmp/{user}/generator_error.txt')
+        print(result)
+        if result:
+            if result == 31744:
+                ret = {'error': 'Took too long to execute'}
+            else:
+                ret = {
+                    'input': '',
+                    'output': open(f'tmp/{user}/input.txt').read(),
+                    'error': open(f'tmp/{user}/generator_error.txt').read()
+                    }
+            return JSONResponse(content=ret)
     else:
         with open(f'tmp/{user}/input.txt', 'w') as f:
             f.write(sample.input)
