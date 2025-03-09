@@ -1058,7 +1058,6 @@ def get_scoreboard(request: Request):
 
     section_sides = []
     for _, section_id in sorted_sections:
-        print(sections[section_id]['title'])
         sorted_questions = sorted(questions.items(), key=lambda q: q[1]['points'])
         for question_id, question in sorted_questions:
             if question['section'] == section_id:
