@@ -200,10 +200,23 @@
     <thead>
         <tr>
             <th>
+				<div>
 				<label for=cb2-7>Show All</label>
 				<div class="checkbox-wrapper-7" style="float: left;">
 					<input class="tgl tgl-ios" id="cb2-7" type="checkbox" onclick="setShowAll()"/>
 					<label class="tgl-btn" for="cb2-7">
+				</div>
+				</div>
+
+				<br>
+				<br>
+
+				<div>
+				<label for=auto_update>Auto Update</label>
+				<div class="checkbox-wrapper-7" style="float: left;">
+					<input class="tgl tgl-ios" id="auto_update" type="checkbox" onclick="setShowAll()"/>
+					<label class="tgl-btn" for="auto_update">
+				</div>
 				</div>
 			</th>
 
@@ -246,25 +259,26 @@
 	}
 
 	function update() {
-		fetch("/scoreboard", {
-			method: "GET",
-		}).then(response => {
-			return response.text();
-		}).then(text => {
-			if (document.getElementById("cb2-7").checked) {
-				document.body.innerHTML = text;
-				document.getElementById("cb2-7").checked = true;
-			} else {
-				document.body.innerHTML = text;
-				document.getElementById("cb2-7").checked = false;
-			}
-			setShowAll()
-		})
+		if (document.getElementById("auto_update").checked) {
+			fetch("/scoreboard", {
+				method: "GET",
+			}).then(response => {
+				return response.text();
+			}).then(text => {
+				if (document.getElementById("cb2-7").checked) {
+					document.body.innerHTML = text;
+					document.getElementById("cb2-7").checked = true;
+				} else {
+					document.body.innerHTML = text;
+					document.getElementById("cb2-7").checked = false;
+				}
+				document.getElementById("auto_update").checked = true;
+				setShowAll()
+			})
+		}
 		setTimeout(update, 5000); 
 	}
-	if ("{{current_user}}" == "admin") {
-		update();
-	}
+	update();
 
 	function removePreviousSections() {
 		var tags = ["thead", "tbody"];
@@ -305,6 +319,11 @@
 			removePreviousSections()
 		}
 	}
+	
+	document.getElementById("auto_update").checked = false;
+	document.getElementById("cb2-7").checked = false;
+
+	setShowAll();
 </script>
 </body>
 
