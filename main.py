@@ -1052,20 +1052,28 @@ def get_scoreboard(request: Request):
     sorted_sections = []
     for section_id in sections:
         section = sections[section_id]
-        if section['visible']:
+        if section['visible'] and not section['resource']:
             sorted_sections.append((section['order'], section_id))
+    sorted_sections.sort()
 
+    section_sides = []
     for _, section_id in sorted_sections:
+        print(sections[section_id]['title'])
         sorted_questions = sorted(questions.items(), key=lambda q: q[1]['points'])
         for question_id, question in sorted_questions:
             if question['section'] == section_id:
                 active_questions.append(question_id)
+        section_sides.append(len(active_questions))
     
     active_questions.reverse()
+    section_sides = [len(active_questions) - x for x in section_sides][:-1]
 
     question_template, before, after = get_group(content, 'question')
-    for question_id in active_questions:
-        before += replace_keywords(question_template, onclick=f"window.location.href = '/question/{question_id}'", name=questions[question_id]['title'])
+    for i, question_id in enumerate(active_questions):
+        before += replace_keywords(question_template,
+                                   onclick=f"window.location.href = '/question/{question_id}'",
+                                   name=questions[question_id]['title'],
+                                   classes='section_side' if i in section_sides else '')
 
     content = before + after
 
@@ -1078,15 +1086,22 @@ def get_scoreboard(request: Request):
         user_before = replace_keywords(user_before, name=users[username]['name'])
 
         total_point = 0
-        for question_id in active_questions:
+        for i, question_id in enumerate(active_questions):
             point = 0 if question_id not in users[username]['solves'] else users[username]['solves'][question_id]['points']
             user_point = 0 if question_id not in users[user]['solves'] else users[user]['solves'][question_id]['points']
             expected = questions[question_id]['points']
 
-            if question_id in users[username]['solves'] and 'waiting' in users[username]['solves'][question_id] and users[username]['solves'][question_id]['waiting'] == True:  state = replace_keywords(solved_template, solved='waiting')
-            elif point <= 0:        state = replace_keywords(solved_template, solved='unsolved')
-            elif point < expected:  state = replace_keywords(solved_template, solved='partially_solved')
-            else:                   state = replace_keywords(solved_template, solved='solved')
+            classes = ''
+
+            if question_id in users[username]['solves'] and 'waiting' in users[username]['solves'][question_id] and users[username]['solves'][question_id]['waiting'] == True: classes = 'waiting'
+            elif point <= 0:        classes = 'unsolved'
+            elif point < expected:  classes = 'partially_solved'
+            else:                   classes = 'solved'
+
+            if i in section_sides:
+                classes += ' section_side'
+
+            state = replace_keywords(solved_template, classes=classes)
 
             if user_point >= expected or user == 'admin':
                 onclick = f"location.href='/viewcode/{username}/{question_id}'"
@@ -1097,7 +1112,7 @@ def get_scoreboard(request: Request):
             user_before += replace_keywords(state, onclick=onclick, point=point, cursor=cursor)
             total_point += point
 
-        user_before += replace_keywords(solved_template, solved="unsolved", onclick="", point=total_point)
+        user_before += replace_keywords(solved_template, solved="unsolved", onclick="", point=total_point, classes='section_side')
         user_strings.append((total_point, user_before + user_after))
 
     user_strings.sort(reverse=True)

@@ -51,6 +51,10 @@
 			border-bottom: 3px solid #112D4E;
         }
 
+		.section_side {
+			border-left: 3px solid #112D4E;
+		}
+
         .solved {
 			background-color: #44CF6C;
         }
@@ -106,12 +110,12 @@
         <!-- Add more rows based on the number of users -->
 
 <!-- question -->
-<th>
+<th class="{{classes}}">
 	<div class="ver" onclick="{{onclick}}" style="cursor: pointer;">{{name}}</div>
 </th>
 <!-- question end -->
 
-<th>
+<th class="section_side">
 	<div class="ver">Toplam</div>
 </th>
 
@@ -126,7 +130,7 @@
 	<tr>
 		<td><strong>{{name}}</strong></td>
 <!-- solved -->
-<td class="{{solved}}" onclick="{{onclick}}" style="cursor: {{cursor}};">{{point}}</td>
+<td class="{{classes}}" onclick="{{onclick}}" style="cursor: {{cursor}};">{{point}}</td>
 <!-- solved end -->
 	</tr>
 <!-- user end -->
