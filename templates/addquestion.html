@@ -2,9 +2,107 @@
 	<head>
 		<title>İşte İsar</title>
 		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+		<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+		<script>
+	require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+	require(["vs/editor/editor.main"], function () {
+		function createEditor(container, language) {
+            var content = container.textContent;
+            container.innerHTML = "";
+			options = {
+				value: content,
+				language: language,
+				theme: "vs",
+				automaticLayout: true,
+				fontSize: 20,
+				fontFamily: "Fira Code, Consolas, monospace", // Custom font
+				lineNumbers: "off",
+				scrollBeyondLastLine: false,
+				minimap: { enabled: false },
+				scrollbar: {
+					vertical: "hidden"
+				},
+			}
+            const editor = monaco.editor.create(container, options);
+
+            function updateHeight() {
+				const lineCount = editor.getModel().getLineCount(); // Get total lines
+				const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight) || 20; // Default line height
+
+				const contentHeight = lineCount * lineHeight + 10; // Add padding
+				container.style.height = contentHeight + "px";
+				editor.layout();
+			}
+
+            // Set initial height
+            updateHeight();
+
+            // Update height when content changes
+            editor.onDidChangeModelContent(updateHeight);
+            return editor;
+        }
+
+		document.editors = {}
+		Array.from(document.querySelectorAll('[id^="editor-"]')).forEach(element => {
+			["python", "html", "plaintext"].forEach(lang => {
+				if (element.classList.contains("editortype-" + lang)) {
+					document.editors[element.id] = createEditor(element, lang);
+				}
+			})
+		})
+
+		monaco.editor.defineTheme("myTheme", {
+			base: "vs",
+			inherit: true,
+			rules: [
+				{
+				"foreground": "#00800b",
+				"token": "string"
+				},
+				{
+				"foreground": "#633f00",
+				// "fontStyle": "bold",
+				"token": "keyword"
+				},
+				{
+				"foreground": "666666",
+				"token": "comment"
+				},
+				{
+				"foreground": "#0a007d",
+				// "fontStyle": "bold",
+				"token": "number"
+				}
+			],
+			colors: {
+				"editor.background": "#F9F7F7",
+			}
+		})
+		monaco.editor.setTheme("myTheme");
+	});
+	
+		</script>
 		<style>
 			textarea {
 				font-size: 16px;
+			}
+			.explanation {
+				font-size: 14px;
+				margin-top: 20px;
+				margin-bottom: 0px;
+				font-weight: bold;
+				color: #102b4b;
+			}
+
+			.editor_wrapper {
+				padding: 10px;
+				margin-top: 0px;
+				background-color: #f7f5f5;
+			}
+
+			.editor {
+				width: 100%;
 			}
 		</style>
 	</head>
@@ -24,17 +122,21 @@
 		<div class="round">
 			<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required>
 		</div>
-		<div class="round">
-			<textarea style="width: 100%" rows="10" placeholder="Type question here" id="question">{{question}}</textarea>
+		<p class="explanation">Question</p>
+		<div class="round editor_wrapper">
+			<div id="editor-question" class="editor editortype-html">{{question}}</div>
 		</div>
-		<div class="round">
-			<textarea style="width: 100%" rows="10" placeholder="Pre-solution code" id="presolution">{{presolution}}</textarea>
+		<p class="explanation">Pre-solution</p>
+		<div class="round editor_wrapper">
+			<div id="editor-presolution" class="editor editortype-python">{{presolution}}</div>
 		</div>
-		<div class="round">
-			<textarea style="width: 100%" rows="10" placeholder="Initial solution code" id="tmpsolution">{{tmpsolution}}</textarea>
+		<p class="explanation">Tmp-solution</p>
+		<div class="round editor_wrapper">
+			<div id="editor-tmpsolution" class="editor editortype-python">{{tmpsolution}}</div>
 		</div>
-		<div class="round">
-			<textarea style="width: 100%" rows="10" placeholder="Post-solution code" id="postsolution">{{postsolution}}</textarea>
+		<p class="explanation">Post-solution</p>
+		<div class="round editor_wrapper">
+			<div id="editor-postsolution" class="editor editortype-python">{{postsolution}}</div>
 		</div>
 		<div class="round">
 			<input style="width: 100%; font-size:22px;" id="envfiles" name="envfiles" value="{{envfiles}}" placeholder="Env Files, comma separated">
@@ -121,12 +223,14 @@
 					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
 				</div>
 			</div>
-			<div class="round">
-				<textarea style="width: 100%;" rows="10" placeholder="Solution" id="solution_area">{{solution_solution}}</textarea>
-			</div>
-			<div class="round">
-				<textarea style="width: 100%;" rows="10" placeholder="Testcase generator" id="generator">{{solution_generator}}</textarea>
-			</div>
+		<p class="explanation">Solution</p>
+		<div class="round editor_wrapper">
+			<div id="editor-solution-solution" class="editor editortype-python">{{solution_solution}}</div>
+		</div>
+		<p class="explanation">Testcase Generator</p>
+		<div class="round editor_wrapper">
+			<div id="editor-solution-generator" class="editor editortype-python">{{solution_generator}}</div>
+		</div>
 			<div class="button" onclick="testgenerator()"> Generate a Testcase </div>
 			<div id="solution_sampletestcasepair" style="display: flex; width: 100%;">
 				<div class="round" style="width: 100%; margin: 20px;">
@@ -163,8 +267,8 @@
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify({
-							"solution": document.getElementById("solution_area").value,
-							"generator": document.getElementById("generator").value
+							"solution": document.editors["editor-solution-solution"].getValue(),
+							"generator": document.editors["editor-solution-generator"].getValue(),
 						})
 					}).then(response => response.json()).then(data => {
 						if (data["error"]) {
@@ -193,7 +297,7 @@
 
 				async function runsamples() {
 					var pairs = document.getElementById("solution_testcasepairs");
-					var solution = document.getElementById("solution_area").value;
+					var solution = document.editors['editor-solution-solution'].getValue();
 					for (var iii = 0; iii < pairs.children.length; iii++) {
 						console.log(iii);
 						var sampleinput = pairs.children[iii].children[0].children[0].value;
@@ -225,8 +329,10 @@
 
 		<!-- checker -->
 		<div id="checker">
-			<div class="round">
-				<textarea style="width: 100%;" rows="10" placeholder="Checker" id="checker_area">{{checker_checker}}</textarea>
+
+			<p class="explanation">Checker</p>
+			<div class="round editor_wrapper">
+				<div id="editor-checker" class="editor editortype-python">{{checker_checker}}</div>
 			</div>
 		</div>
 
@@ -337,10 +443,10 @@
 		function addquestion(id) {
 
 			var title = document.getElementById("title").value;
-			var question = document.getElementById("question").value;
-			var presolution = document.getElementById("presolution").value;
-			var tmpsolution = document.getElementById("tmpsolution").value;
-			var postsolution = document.getElementById("postsolution").value;
+			var question = document.editors["editor-question"].getValue();
+			var presolution = document.editors["editor-presolution"].getValue();
+			var tmpsolution = document.editors["editor-tmpsolution"].getValue();
+			var postsolution = document.editors["editor-postsolution"].getValue();
 			var envfiles = document.getElementById("envfiles").value;
 			var type = judge.value;
 			var section = document.getElementById("section_select").value;
@@ -372,8 +478,8 @@
 					question["testcases"].push({input: sampleinput, output: sampleoutput, show: show});
 				}
 			} else if (type == "solution") {
-				var solution_area = document.getElementById("solution_area").value;
-				var generator = document.getElementById("generator").value;
+				var solution_area = document.editors["editor-solution-solution"].getValue();
+				var generator = document.editors["editor-solution-generator"].getValue();
 				question["solution"] = solution_area;
 				question["generator"] = generator;
 
@@ -385,7 +491,7 @@
 					question["testcases"].push({input: sampleinput, output: sampleoutput});
 				}
 			} else if (type == "checker") {
-				var checker_area = document.getElementById("checker_area").value;
+				var checker_area = document.editors["editor-checker"].getValue();
 				question["checker"] = checker_area;
 			} else if (type == "guessinput") {
 				var guessinput_area = document.getElementById("guessinput_code").value;
@@ -417,6 +523,6 @@
 				}
 			})
 		}
-	
+
 	</script>
 </html>
