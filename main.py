@@ -296,6 +296,7 @@ def editquestion(request: Request, question_id: str):
                                presolution=question['presolution'],
                                tmpsolution=question['tmpsolution'],
                                postsolution=question['postsolution'],
+                               solution_solution=question['solution'] if 'solution' in question else '',
                                envfiles=question['envfiles'],
                                id=question_id,
                                points=question['points'],
@@ -326,7 +327,6 @@ def editquestion(request: Request, question_id: str):
     elif question['type'] == 'solution':
         content = replace_keywords(content, solution_selected='selected')
         content = replace_keywords(content,
-                                   solution_solution=question['solution'],
                                    solution_generator=question['generator'])
         testcasepair_template, before, after = get_group(content, 'solution_testcasepair')
         for testcasepair in question['testcases']:

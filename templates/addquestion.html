@@ -126,18 +126,27 @@
 		<div class="round editor_wrapper">
 			<div id="editor-question" class="editor editortype-html">{{question}}</div>
 		</div>
+
 		<p class="explanation">Pre-solution</p>
 		<div class="round editor_wrapper">
 			<div id="editor-presolution" class="editor editortype-python">{{presolution}}</div>
 		</div>
+
 		<p class="explanation">Tmp-solution</p>
 		<div class="round editor_wrapper">
 			<div id="editor-tmpsolution" class="editor editortype-python">{{tmpsolution}}</div>
 		</div>
+
 		<p class="explanation">Post-solution</p>
 		<div class="round editor_wrapper">
 			<div id="editor-postsolution" class="editor editortype-python">{{postsolution}}</div>
 		</div>
+
+		<p class="explanation">Solution</p>
+		<div class="round editor_wrapper">
+			<div id="editor-solution-solution" class="editor editortype-python">{{solution_solution}}</div>
+		</div>
+
 		<div class="round">
 			<input style="width: 100%; font-size:22px;" id="envfiles" name="envfiles" value="{{envfiles}}" placeholder="Env Files, comma separated">
 		</div>
@@ -223,10 +232,6 @@
 					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
 				</div>
 			</div>
-		<p class="explanation">Solution</p>
-		<div class="round editor_wrapper">
-			<div id="editor-solution-solution" class="editor editortype-python">{{solution_solution}}</div>
-		</div>
 		<p class="explanation">Testcase Generator</p>
 		<div class="round editor_wrapper">
 			<div id="editor-solution-generator" class="editor editortype-python">{{solution_generator}}</div>
@@ -447,6 +452,7 @@
 			var presolution = document.editors["editor-presolution"].getValue();
 			var tmpsolution = document.editors["editor-tmpsolution"].getValue();
 			var postsolution = document.editors["editor-postsolution"].getValue();
+			var solution = document.editors["editor-solution-solution"].getValue();
 			var envfiles = document.getElementById("envfiles").value;
 			var type = judge.value;
 			var section = document.getElementById("section_select").value;
@@ -459,6 +465,7 @@
 				presolution: presolution,
 				tmpsolution: tmpsolution,
 				postsolution: postsolution,
+				solution: solution,
 				envfiles: envfiles,
 				type: type,
 				section: section,
@@ -478,9 +485,7 @@
 					question["testcases"].push({input: sampleinput, output: sampleoutput, show: show});
 				}
 			} else if (type == "solution") {
-				var solution_area = document.editors["editor-solution-solution"].getValue();
 				var generator = document.editors["editor-solution-generator"].getValue();
-				question["solution"] = solution_area;
 				question["generator"] = generator;
 
 				pairs = document.getElementById("solution_testcasepairs");
