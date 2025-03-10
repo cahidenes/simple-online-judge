@@ -778,10 +778,13 @@ def get_question(request: Request, question_id: str):
        'solution' in questions[question_id]:
        solution = f'<a style="color: #102d4e; text-decoration: none;" href="/viewcode/solution/{question_id}">Solution</a>'
     
+    success_link = '/viewcode/solution/' + question_id if 'solution' in questions[question_id] else ''
+    
     content = replace_keywords(content,
                                current_user=user,
                                qname=question['title'],
                                statement=question['question'],
+                               success_link=success_link,
                                solution=solution,
                                codegolfscoring=f'<b>Scoring:</b> {question["points"]} * ({question["score"]})' if question['type'] == 'codegolf' else '',
                                presolution=question['presolution'].replace('\n', '\\n'),

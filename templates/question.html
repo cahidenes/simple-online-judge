@@ -405,7 +405,6 @@
 			}
 			var data = {}
 			if (response.headers.get("stream") == "true") {
-				console.log(response);
 				const reader = response.body.getReader();
 				const decoder = new TextDecoder();
 				
@@ -414,7 +413,6 @@
 					if (done) break;
 
 					const chunk = decoder.decode(value, { stream: true });
-					console.log("Received chunk:", chunk);
 
 					// Process JSON objects line by line
 					chunk.split("\n").forEach(line => {
@@ -428,16 +426,21 @@
 				}
 			} else {
 				data = await response.json();
-				console.log("Stream değil");
-				console.log(data);
 			}
 
 			history = [userInput];
 			if (data.result == "success") {
 				button.style.backgroundColor = "#44CF6C"
-				button.textContent = "Correct!"
-				button.onclick = "";
-				button.disabled = true;
+				if ('{{success_link}}' == ""){
+					button.textContent = "Correct!"
+					button.disabled = true;
+				} else {
+					button.textContent = "Correct! See Official Solution"
+					button.disabled = false;
+					button.onclick = function() {
+						document.location.href = '{{success_link}}'
+					}
+				}
 				if (data.error) {
 					errormsg.innerText = data.error;
 					error.hidden = false;
