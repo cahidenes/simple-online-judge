@@ -773,12 +773,16 @@ def get_question(request: Request, question_id: str):
         content = f.read()
     
     solution = ''
-    if question_id in users[user]['solves'] and \
-       users[user]['solves'][question_id]['points'] == questions[question_id]['points'] and \
-       'solution' in questions[question_id]:
+    if ((question_id in users[user]['solves'] and \
+       users[user]['solves'][question_id]['points'] == questions[question_id]['points']) or \
+       user == 'admin') and \
+       'solution' in questions[question_id] and \
+        questions[question_id]['solution'] != '':
        solution = f'<a style="color: #102d4e; text-decoration: none;" href="/viewcode/solution/{question_id}">Solution</a>'
     
-    success_link = '/viewcode/solution/' + question_id if 'solution' in questions[question_id] else ''
+    success_link = ''
+    if 'solution' in questions[question_id] and questions[question_id]['solution'] != '':
+        success_link = '/viewcode/solution/' + question_id
     
     content = replace_keywords(content,
                                current_user=user,
