@@ -493,8 +493,14 @@
 		button.style.backgroundColor = "#112D4E"
 		button.textContent = "Submit"
 		button.disabled = false;
-	}
+	}	
 
+}
+
+if ("{{current_user}}" == "admin") {
+	document.getElementById("question-name")?.addEventListener("click", function () {
+		window.location.href = "/editquestion/24";
+	});
 }
 </script>
 

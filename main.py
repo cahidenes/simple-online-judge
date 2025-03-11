@@ -793,6 +793,7 @@ def get_question(request: Request, question_id: str):
                                qname=question['title'],
                                statement=question['question'],
                                success_link=success_link,
+                               question_id=question_id,
                                solution=solution,
                                codegolfscoring=f'<b>Scoring:</b> {question["points"]} * ({question["score"]})' if question['type'] == 'codegolf' else '',
                                presolution=question['presolution'].replace('\n', '\\n'),
