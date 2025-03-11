@@ -51,6 +51,9 @@ def save_users():
 
 with open(DATA_DIR + 'questions.json') as f:
     questions = json.load(f)
+    for question in questions.values():
+        if 'order' not in question:
+            question['order'] = 0
 def save_questions():
     with open(DATA_DIR + 'questions.json', 'w') as f:
         json.dump(questions, f)
@@ -300,6 +303,7 @@ def editquestion(request: Request, question_id: str):
                                envfiles=question['envfiles'],
                                id=question_id,
                                points=question['points'],
+                               order=question['order'],
                                add_hidden='hidden')
 
     section_option, before, after = get_group(content, 'section_option')
@@ -740,7 +744,7 @@ def getsection(request: Request, section_id: str):
                 continue
             before += replace_keywords(question_template, id=resource_id, title=resources[resource_id]['title'], done='notdone')
     else:
-        sorted_questions = sorted(questions.items(), key=lambda x: x[1]['points'])
+        sorted_questions = sorted(questions.items(), key=lambda x: x[1]['order'])
         for question_id, _ in sorted_questions:
             if questions[question_id]['section'] != section_id:
                 continue
@@ -1090,7 +1094,7 @@ def get_scoreboard(request: Request):
 
     section_sides = []
     for _, section_id in sorted_sections:
-        sorted_questions = sorted(questions.items(), key=lambda q: q[1]['points'])
+        sorted_questions = sorted(questions.items(), key=lambda q: q[1]['order'])
         for question_id, question in sorted_questions:
             if question['section'] == section_id:
                 active_questions.append(question_id)

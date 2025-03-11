@@ -402,6 +402,10 @@
 			<input id="points" type="number" name="points" value="{{points}}" placeholder="Points" required>
 		</div>
 
+		<div class="round">
+			<input id="order" type="number" name="order" value="{{order}}" placeholder="Order" required>
+		</div>
+
 		<select class="round" style="width: 100%" id="section_select">
 			<option value="default" selected> - </option>
 <!-- section_option -->
@@ -461,6 +465,7 @@
 			var type = judge.value;
 			var section = document.getElementById("section_select").value;
 			var points = Number(document.getElementById("points").value);
+			var order = Number(document.getElementById("order").value);
 
 			var question = {
 				id: id,
@@ -473,7 +478,8 @@
 				envfiles: envfiles,
 				type: type,
 				section: section,
-				points: points
+				points: points,
+				order: order
 			}
 
 			if (type == "outputonly") {
