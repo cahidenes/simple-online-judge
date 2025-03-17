@@ -345,7 +345,7 @@ def editquestion(request: Request, question_id: str):
     elif question['type'] == 'guessinput':
         content = replace_keywords(content,
                                    guessinput_selected='selected',
-                                   guessinput_code=question['guessinputcode'],
+                                   guessinput_code=question['guessinputcode'].replace('"', '\\"'),
                                    guessinput_output=question['output'],
                                    guessinput_input=question['input'])
     elif question['type'] == 'codegolf':
@@ -796,9 +796,9 @@ def get_question(request: Request, question_id: str):
                                question_id=question_id,
                                solution=solution,
                                codegolfscoring=f'<b>Scoring:</b> {question["points"]} * ({question["score"]})' if question['type'] == 'codegolf' else '',
-                               presolution=question['presolution'].replace('\n', '\\n'),
-                               tmpsolution=question['tmpsolution'].replace('\n', '\\n'),
-                               postsolution=question['postsolution'].replace('\n', '\\n'),
+                               presolution=question['presolution'].replace('\n', '\\n').replace('"', '\\"'),
+                               tmpsolution=question['tmpsolution'].replace('\n', '\\n').replace('"', '\\"'),
+                               postsolution=question['postsolution'].replace('\n', '\\n').replace('"', '\\"'),
                                score=question['points'])
     
     guess_input_template, before, _ = get_group(content, 'guessinput')
@@ -850,6 +850,9 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             elif isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in {"open", "eval", "exec"}:
                     return JSONResponse({'error': f'{node.func.id} statements are not allowed'})
+                if question['type'] in ['outputonly', 'checker', 'codegolf'] and node.func.id == 'input':
+                    return JSONResponse({'error': f'Do not use input'})
+
     except:
         pass
 
