@@ -8,17 +8,13 @@
 	require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 	require(["vs/editor/editor.main"], function () {
 		function createEditor(container, language) {
-			var content = "";
-			if (language == "html") {
-				content = container.innerHTML;
-			} else {
-             	content = container.textContent;
-			}
-            container.innerHTML = "";
+			var content = container.textContent;
 			var wrap = "off";
 			if (language == "html") {
+				content = container.innerHTML;
 				wrap = "on";
 			}
+            container.innerHTML = "";
 			options = {
 				value: content,
 				language: language,
@@ -43,11 +39,10 @@
 				editor.layout();
 			}
 
-            // Set initial height
-            updateHeight();
-
-            // Update height when content changes
-            editor.onDidChangeModelContent(updateHeight);
+			if (language != "html") {
+				updateHeight();
+				editor.onDidChangeModelContent(updateHeight);
+			}
             return editor;
         }
 
