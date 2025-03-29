@@ -1137,6 +1137,11 @@ def get_scoreboard(request: Request):
             elif point < expected:  classes = 'partially_solved'
             else:                   classes = 'solved'
 
+            total_point += point
+
+            if questions[question_id]['type'] == 'codegolf' and question_id in users[username]['solves']:
+                point = f'{point}\n<p style="font-size: 12px; margin: 0px;">({len(users[username]['solves'][question_id]['best_solution']['code'])})</p>'
+
             if i in section_sides:
                 classes += ' section_side'
 
@@ -1149,7 +1154,6 @@ def get_scoreboard(request: Request):
                 onclick = ""
                 cursor = "default"
             user_before += replace_keywords(state, onclick=onclick, point=point, cursor=cursor)
-            total_point += point
 
         user_before += replace_keywords(solved_template, solved="unsolved", onclick="", point=total_point, classes='section_side')
         user_strings.append((total_point, user_before + user_after))
