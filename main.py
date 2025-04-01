@@ -1024,7 +1024,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                 length = len(answer.input)
                 points = max(0, min(1, eval(question['score'].replace('c', str(length)))))
                 msg = f"Character count: {length}\n" \
-                      f"Score: {int(points * questions[question_id]['points'])}/{questions[question_id]['points']}"
+                      f"Score: {points * questions[question_id]['points']:.2f}/{questions[question_id]['points']}"
     elif question['type'] == 'manual':
         if section['points']:
             users[user]['solves'][question_id]['waiting'] = True
@@ -1032,7 +1032,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
         return JSONResponse({'result': 'submitted', 'error': 'Your solution is submitted and will be evaluated'})
 
     if section['points']:
-        users[user]['solves'][question_id]['points'] = int(points * questions[question_id]['points'])
+        users[user]['solves'][question_id]['points'] = round(points * questions[question_id]['points'], 2)
         users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
         save_users()
     response = {}
@@ -1155,7 +1155,7 @@ def get_scoreboard(request: Request):
                 cursor = "default"
             user_before += replace_keywords(state, onclick=onclick, point=point, cursor=cursor)
 
-        user_before += replace_keywords(solved_template, solved="unsolved", onclick="", point=total_point, classes='section_side')
+        user_before += replace_keywords(solved_template, solved="unsolved", onclick="", point=round(total_point, 2), classes='section_side')
         user_strings.append((total_point, user_before + user_after))
 
     user_strings.sort(reverse=True)
