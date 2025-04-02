@@ -454,7 +454,7 @@ def listquestions(request: Request):
     question_template, before, after = get_group(content, 'question')
     for id in questions:
         question = questions[id]
-        desc = re.sub(r'</?(li|ul|ol|img)>', '', question['question'])
+        desc = re.sub(r'</?(li|ul|ol|img|h1|h2|h3|h4|h5|h6)>', '', question['question'])
         question_content = replace_keywords(question_template, id=id, title=question['title'], description=desc, section='-' if question['section'] in ['-', 'default'] else sections[question['section']]['title'])
         before += question_content
     content = before + after
@@ -883,7 +883,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
         def checking_stream():
             for i in range(100):
                 yield json.dumps({'checking': i+1}) + '\n'
-                result = os.system(f'python3 {dir}/generator.py > {dir}/input.txt 2> {dir}/generator_error.txt')
+                result = os.system(f'cd {dir}; python3 generator.py > input.txt 2> generator_error.txt')
                 if result:
                     yield json.dumps({'error': 'An error occured when generating input: ' + get('generator_error.txt')}) + '\n'
                     return
@@ -892,7 +892,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                     f.write('No output is generated')
                 with open(f'{dir}/error.txt', 'w') as f:
                     f.write('No error is generated')
-                result = os.system(f'timeout 1s python3 {dir}/code.py < {dir}/input.txt > {dir}/output.txt 2> {dir}/error.txt')
+                result = os.system(f'cd {dir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
                 if result:
                     if result == 31744:
                         yield json.dumps({'error': 'Took too long to execute', 'input': get('input.txt')}) + '\n'
@@ -901,7 +901,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                         yield json.dumps({'error': get('error.txt'), 'input': get('input.txt')}) + '\n'
                         return
 
-                result = os.system(f'python3 {dir}/solution.py < {dir}/input.txt > {dir}/expected.txt 2> {dir}/solution_error.txt')
+                result = os.system(f'cd {dir}; python3 solution.py < input.txt > expected.txt 2> solution_error.txt')
                 if result:
                     yield json.dumps({'error': 'An error occured when generating solution: ' + get('solution_error.txt')}) + '\n'
                     return
@@ -928,7 +928,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
         with open(f'{dir}/output.txt', 'w') as f:
             f.write('No output is generated')
 
-        result = os.system(f'python3 {dir}/checker.py > {dir}/output.txt 2> {dir}/error.txt')
+        result = os.system(f'cd {dir}; python3 checker.py > output.txt 2> error.txt')
         print('Result:', result)
         print('Output: ', get('output.txt'))
         if result:
@@ -954,7 +954,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             f.write(question['postsolution'])
         with open(f'{dir}/output.txt', 'w') as f:
             f.write('No output is generated')
-        error_code = os.system(f'python3 {dir}/code.py > {dir}/output.txt 2> {dir}/error.txt')
+        error_code = os.system(f'cd {dir}; python3 code.py > output.txt 2> error.txt')
 
         if error_code:
             error = get('error.txt')
@@ -991,7 +991,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             with open(f'{dir}/input.txt', 'w') as f:
                 f.write(testcase['input'])
 
-            result = os.system(f'timeout 1s python3 {dir}/code.py < {dir}/input.txt > {dir}/output.txt 2> {dir}/error.txt')
+            result = os.system(f'cd {dir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
             if result:
                 if result == 31744:
                     return JSONResponse({'error': 'Took too long to execute', 'input': get('input.txt')})
@@ -1015,7 +1015,7 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             f.write(question['postsolution'])
         with open(f'{dir}/output.txt', 'w') as f:
             f.write('No output is generated')
-        error_code = os.system(f'python3 {dir}/code.py > {dir}/output.txt 2> {dir}/error.txt')
+        error_code = os.system(f'cd {dir}; python3 code.py > output.txt 2> error.txt')
 
         if error_code:
             error = get('error.txt')
