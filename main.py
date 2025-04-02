@@ -929,6 +929,8 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             f.write('No output is generated')
 
         result = os.system(f'python3 {dir}/checker.py > {dir}/output.txt 2> {dir}/error.txt')
+        print('Result:', result)
+        print('Output: ', get('output.txt'))
         if result:
             error = get('error.txt')
             output = get('output.txt')
@@ -936,8 +938,15 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                 return JSONResponse({'error': error})
             else:
                 return JSONResponse({'error': output})
-        else:
-            points = 1
+        elif result == 0:
+            if get('output.txt') == '':
+                points = 1
+            else:
+                try:
+                    points, msg = get('output.txt').split('|')
+                    points = float(points)
+                except Exception as e:
+                    return JSONResponse({'error': ''})
     elif question['type'] == 'outputonly':
         with open(dir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
