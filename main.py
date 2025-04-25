@@ -1148,7 +1148,7 @@ def get_scoreboard(request: Request):
 
             total_point += point
 
-            if questions[question_id]['type'] == 'codegolf' and question_id in users[username]['solves']:
+            if questions[question_id]['type'] == 'codegolf' and question_id in users[username]['solves'] and users[username]['solves'][question_id]['best_solution'] != None:
                 point = f'{point}\n<p style="font-size: 12px; margin: 0px;">({len(users[username]['solves'][question_id]['best_solution']['code'])})</p>'
 
             if i in section_sides:
