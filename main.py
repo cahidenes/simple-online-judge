@@ -1042,8 +1042,11 @@ def evaluate(request: Request, question_id: str, answer: Answer):
 
     if section['points']:
         users[user]['solves'][question_id]['points'] = round(points * questions[question_id]['points'], 2)
-        users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
-        save_users()
+    else:
+        users[user]['solves'][question_id]['points'] = 0.1
+    users[user]['solves'][question_id]['best_solution'] = {'time': time, 'code': answer.input}
+    save_users()
+
     response = {}
     if msg:
         response['error'] = msg
