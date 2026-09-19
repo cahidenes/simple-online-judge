@@ -1,20 +1,15 @@
-from typing import Union, Annotated, Any, List
-from fastapi import FastAPI, Request, Body, Depends, HTTPException, status, APIRouter, Response
+from typing import Union, Any, List
+from fastapi import FastAPI, Request, Body, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import json
 import re
 import os
+import shutil
 from datetime import datetime
 import ast
 import markdown
-
-color1 = 'F9F7F7'
-color2 = 'DBE2EF'
-color3 = '66bb6a'
-color33 = '3F72AF'
-color4 = '112D4E'
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -41,7 +36,8 @@ class Answer(BaseModel):
 DATA_DIR = os.path.expanduser('~/.config/simple-online-judge/')
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
-    os.system("cp data/* " + DATA_DIR)
+    for _seed_file in os.listdir('data'):
+        shutil.copy(os.path.join('data', _seed_file), os.path.join(DATA_DIR, _seed_file))
 
 with open(DATA_DIR + 'users.json') as f:
     users = json.load(f)
@@ -49,17 +45,28 @@ def save_users():
     with open(DATA_DIR + 'users.json', 'w') as f:
         json.dump(users, f)
 
+def normalize_tags(value):
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(t).strip() for t in value if str(t).strip()]
+    return [t.strip() for t in str(value).split(',') if t.strip()]
+
 with open(DATA_DIR + 'questions.json') as f:
     questions = json.load(f)
     for question in questions.values():
         if 'order' not in question:
             question['order'] = 0
+        if 'tags' not in question:
+            question['tags'] = []
 def save_questions():
     with open(DATA_DIR + 'questions.json', 'w') as f:
         json.dump(questions, f)
 
 with open(DATA_DIR + 'sections.json') as f:
     sections = json.load(f)
+    for section in sections.values():
+        section.pop('resource', None)
 def save_sections():
     with open(DATA_DIR + 'sections.json', 'w') as f:
         json.dump(sections, f)
@@ -69,6 +76,8 @@ with open(DATA_DIR + 'resources.json') as f:
     for resource in resources.values():
         if 'order' not in resource:
             resource['order'] = 0
+        if 'tags' not in resource:
+            resource['tags'] = []
 def save_resources():
     with open(DATA_DIR + 'resources.json', 'w') as f:
         json.dump(resources, f)
@@ -98,7 +107,7 @@ def replace_keywords(content, **keywords):
 def remove_templates(content):
     content = re.sub(r'{{[^}]*}}', '', content)
     for keyword in re.findall(r'<!-- ([^ ]*) end -->', content):
-        grup, before, after = get_group(content, keyword)
+        group, before, after = get_group(content, keyword)
         content = before + after
     return content
 
@@ -106,9 +115,15 @@ def remove_templates(content):
 async def favicon():
     return FileResponse('static/favicon.ico')
 
+def is_safe_filename(filename: str) -> bool:
+    return bool(filename) and '/' not in filename and '\\' not in filename and '..' not in filename
+
+
 @app.get('/files/{dosya}')
 def download(request: Request, dosya: str):
-    return FileResponse(f'files/{dosya}')
+    if not is_safe_filename(dosya):
+        raise HTTPException(status_code=404)
+    return FileResponse(os.path.join('files', dosya))
 
 @app.get('/')
 def home(request: Request):
@@ -116,8 +131,9 @@ def home(request: Request):
 
 @app.get('/resources')
 def get_resources(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     with open('templates/section.html') as f:
@@ -135,48 +151,45 @@ def get_resources(request: Request):
 
     return HTMLResponse(content=content)
 
-def get_sections(request: Request, type):
-    if handle_user(request):
-        return handle_user(request)
+def get_sections(request: Request, section_type):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     with open('templates/main.html') as f:
         content = f.read()
     content = replace_keywords(content, current_user=user)
-    if type == 'questions':
+    if section_type == 'questions':
         content = replace_keywords(content, active_home='class="active"', active_resources='')
-    elif type == 'resources':
+    elif section_type == 'resources':
         content = replace_keywords(content, active_home='', active_resources='class="active"')
 
     section_template, before, after = get_group(content, 'section')
-    sorted_sections = sorted(sections.items(), key=lambda x: x[1]['order'])
+    sorted_sections = sorted(sections.items(), key=lambda x: (x[1].get('order', 0), x[0]))
     for section_id, section in sorted_sections:
-        if user != 'admin' and not section['visible']:
-            continue
-        if type == 'questions' and section['resource']:
-            continue
-        if type == 'resources' and not section['resource']:
+        if user != 'admin' and not section.get('visible'):
             continue
 
         total = 0
         done = 0
         for question_id in questions:
-            if questions[question_id]['section'] != section_id:
+            if questions[question_id].get('section') != section_id:
                 continue
-            total += questions[question_id]['points']
+            total += questions[question_id].get('points', 0)
             if question_id in users[user]['solves']:
-                done += users[user]['solves'][question_id]['points']
+                done += users[user]['solves'][question_id].get('points', 0)
         icons = ''
-        if not section['visible']:
-            icons += '<img src="/files/visible.png"/>'
-        elif not section['active']:
-            icons += '<img src="/files/disabled.png"/>'
-        elif not section['points']:
-            icons += '<img src="/files/nopoint.png"/>'
+        if not section.get('visible'):
+            icons += '<img src="/files/visible.png" alt=""/>'
+        elif not section.get('active'):
+            icons += '<img src="/files/disabled.png" alt=""/>'
+        elif not section.get('points'):
+            icons += '<img src="/files/nopoint.png" alt=""/>'
             
         before += replace_keywords(section_template,
                                    section_id=section_id,
-                                   disabled='' if user == 'admin' or section['active'] else 'disabled',
+                                   disabled='' if user == 'admin' or section.get('active') else 'disabled',
                                    name=section['title'],
                                    percent='0' if total == 0 else str(100 * done // total),
                                    label=f'{done} / {total}',
@@ -201,14 +214,15 @@ async def login(credentials: Credentials):
         response = JSONResponse(content={'error': 'Incorrect password'}, status_code=400)
     else:
         response = JSONResponse(content={}, status_code=200)
-    response.set_cookie(key="username", value=username)
-    response.set_cookie(key="password", value=password)
+        response.set_cookie(key="username", value=username)
+        response.set_cookie(key="password", value=password)
     return response
 
 @app.get('/adduser')
 def adduser(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -219,8 +233,9 @@ def adduser(request: Request):
 
 @app.post('/adduser')
 def adduserpost(request: Request, userdata: UserData):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -232,8 +247,9 @@ def adduserpost(request: Request, userdata: UserData):
 
 @app.get('/listusers')
 def listusers(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -244,8 +260,8 @@ def listusers(request: Request):
 
     user_template, before, after = get_group(content, 'user')
     for username in users:
-        user = users[username]
-        user_content = replace_keywords(user_template, username=username, name=user['name'], scoreboard='Yes' if user['visible'] else 'No')
+        listed_user = users[username]
+        user_content = replace_keywords(user_template, username=username, name=listed_user['name'], scoreboard='Yes' if listed_user['visible'] else 'No')
         before += user_content
     content = before + after
 
@@ -253,11 +269,14 @@ def listusers(request: Request):
 
 @app.get('/edituser/{username}')
 def edituser(request: Request, username: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
+    if username not in users:
+        return RedirectResponse(url='/listusers')
     with open('templates/edituser.html') as f:
         content = f.read()
     content = replace_keywords(content, current_user=user)
@@ -266,11 +285,14 @@ def edituser(request: Request, username: str):
 
 @app.post('/edituser/{username}')
 def edituser(request: Request, username: str, userdata: UserData):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
+    if username not in users:
+        return JSONResponse(content={'error': 'User not found'}, status_code=404)
     solves = users[username]['solves']
     del users[username]
     users[userdata.username] = {'password': userdata.password, 'name': userdata.name, 'visible': userdata.visible, 'solves': solves}
@@ -279,8 +301,9 @@ def edituser(request: Request, username: str, userdata: UserData):
 
 @app.get('/addquestion')
 def addquestion(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -291,8 +314,6 @@ def addquestion(request: Request):
                                save_hidden="hidden")
     section_option, before, after = get_group(content, 'section_option')
     for sectionid, section in sections.items():
-        if section['resource']:
-            continue
         before += replace_keywords(section_option,
                                    value=sectionid,
                                    name=section['title'],
@@ -302,8 +323,9 @@ def addquestion(request: Request):
 
 @app.get('/editquestion/{question_id}')
 def editquestion(request: Request, question_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -312,6 +334,8 @@ def editquestion(request: Request, question_id: str):
         content = f.read()
     content = replace_keywords(content, current_user=user)
 
+    if question_id not in questions:
+        return RedirectResponse(url='/listquestions')
     question = questions[question_id]
     content = replace_keywords(content,
                                title=question['title'],
@@ -323,13 +347,12 @@ def editquestion(request: Request, question_id: str):
                                envfiles=question['envfiles'],
                                id=question_id,
                                points=question['points'],
-                               order=question['order'],
+                               order=question.get('order', 0),
+                               tags=', '.join(normalize_tags(question.get('tags', []))),
                                add_hidden='hidden')
 
     section_option, before, after = get_group(content, 'section_option')
     for sectionid, section in sections.items():
-        if section['resource']:
-            continue
         before += replace_keywords(section_option,
                                    value=sectionid,
                                    name=section['title'],
@@ -384,8 +407,9 @@ def editquestion(request: Request, question_id: str):
 
 @app.post('/addquestion')
 def addquestionpost(request: Request, question: Any = Body(None)):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -395,6 +419,14 @@ def addquestionpost(request: Request, question: Any = Body(None)):
         question['id'] = id
     else:
         id = question['id']
+    if 'order' not in question:
+        if id in questions:
+            question['order'] = questions[id].get('order', 0)
+        else:
+            same = [q.get('order', 0) for q in questions.values()
+                    if q.get('section') == question.get('section')]
+            question['order'] = (max(same) + 1) if same else 0
+    question['tags'] = normalize_tags(question.get('tags', []))
     questions[id] = question
 
     if question['type'] == 'codegolf' and not question['title'].endswith('🚩'):
@@ -408,42 +440,49 @@ def addquestionpost(request: Request, question: Any = Body(None)):
 
 @app.post('/samplerun')
 def samplerun(request: Request, sample: Sample):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     if user != 'admin':
         try:
-            ast = ast.parse(sample.solution)
-            for node in ast.walk(ast):
+            parsed = ast.parse(sample.solution)
+            for node in ast.walk(parsed):
                 if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom):
                     return JSONResponse({'error': 'Import statements are not allowed'})
                 elif isinstance(node, ast.Call):
                     if isinstance(node.func, ast.Name) and node.func.id in {"open", "eval", "exec"}:
                         return JSONResponse({'error': f'{node.func.id} statements are not allowed'})
-        except:
+        except Exception:
             pass
 
     if not os.path.exists(f'tmp/{user}'):
         os.makedirs(f'tmp/{user}')
 
     # clear directory
-    os.system(f'rm -rf tmp/{user}/*')
+    for _tmp_file in os.listdir(f'tmp/{user}'):
+        _tmp_path = os.path.join(f'tmp/{user}', _tmp_file)
+        if os.path.isfile(_tmp_path):
+            os.remove(_tmp_path)
     with open(f'tmp/{user}/solution.py', 'w') as f:
         f.write(sample.solution)
     if sample.generator:
         with open(f'tmp/{user}/generator.py', 'w') as f:
             f.write(sample.generator)
         result = os.system(f'timeout 5s python3 tmp/{user}/generator.py > tmp/{user}/input.txt 2> tmp/{user}/generator_error.txt')
-        print(result)
         if result:
             if result == 31744:
                 ret = {'error': 'Took too long to execute'}
             else:
+                with open(f'tmp/{user}/input.txt') as f:
+                    _gen_input = f.read()
+                with open(f'tmp/{user}/generator_error.txt') as f:
+                    _gen_error = f.read()
                 ret = {
                     'input': '',
-                    'output': open(f'tmp/{user}/input.txt').read(),
-                    'error': open(f'tmp/{user}/generator_error.txt').read()
+                    'output': _gen_input,
+                    'error': _gen_error
                     }
             return JSONResponse(content=ret)
     else:
@@ -454,17 +493,24 @@ def samplerun(request: Request, sample: Sample):
     if result == 31744:
         ret = {'error': 'Took too long to execute'}
     else:
+        with open(f'tmp/{user}/input.txt') as f:
+            _run_input = f.read()
+        with open(f'tmp/{user}/output.txt') as f:
+            _run_output = f.read()
+        with open(f'tmp/{user}/error.txt') as f:
+            _run_error = f.read()
         ret = {
-            'input': open(f'tmp/{user}/input.txt').read(),
-            'output': open(f'tmp/{user}/output.txt').read(),
-            'error': open(f'tmp/{user}/error.txt').read()
+            'input': _run_input,
+            'output': _run_output,
+            'error': _run_error
             }
     return JSONResponse(content=ret)
 
 @app.get('/listquestions')
 def listquestions(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -472,30 +518,120 @@ def listquestions(request: Request):
         content = f.read()
     content = replace_keywords(content, current_user=user)
     question_template, before, after = get_group(content, 'question')
-    for id in questions:
-        question = questions[id]
-        desc = re.sub(r'</?(li|ul|ol|img|h1|h2|h3|h4|h5|h6)>', '', question['question'])
-        question_content = replace_keywords(question_template, id=id, title=question['title'], description=desc, section='-' if question['section'] in ['-', 'default'] else sections[question['section']]['title'])
-        before += question_content
-    content = before + after
+
+    def section_key(item):
+        sid, section = item
+        return (section.get('order', 0), sid)
+
+    real_sections = sorted(
+        list(sections.items()),
+        key=section_key,
+    )
+
+    grouped = {sid: [] for sid, _ in real_sections}
+    ungrouped = []
+    for qid, question in questions.items():
+        sid = question.get('section', '-')
+        if sid in grouped:
+            grouped[sid].append((qid, question))
+        else:
+            ungrouped.append((qid, question))
+
+    body = ''
+    for sid, section in real_sections:
+        body += (
+            f'<div class="section-group" data-section-id="{sid}">'
+            f'<div class="round section-header"><span class="collapse-arrow">▼</span><b>{section["title"]}</b></div>'
+        )
+        for qid, question in sorted(grouped[sid], key=lambda x: (x[1].get('order', 0), x[0])):
+            tags = normalize_tags(question.get('tags', []))
+            body += replace_keywords(question_template,
+                                     id=qid,
+                                     title=question['title'],
+                                     section_id=sid,
+                                     order=question.get('order', 0),
+                                     tags=', '.join(tags),
+                                     tags_attr=', '.join(tags))
+        body += '</div>'
+    if ungrouped:
+        body += (
+            '<div class="section-group" data-section-id="-">'
+            '<div class="round section-header"><span class="collapse-arrow">▼</span><b>No section</b></div>'
+        )
+        for qid, question in sorted(ungrouped, key=lambda x: (x[1].get('order', 0), x[0])):
+            tags = normalize_tags(question.get('tags', []))
+            body += replace_keywords(question_template,
+                                     id=qid,
+                                     title=question['title'],
+                                     section_id='-',
+                                     order=question.get('order', 0),
+                                     tags=', '.join(tags),
+                                     tags_attr=', '.join(tags))
+        body += '</div>'
+    content = before + body + after
     return HTMLResponse(content=content)
 
-@app.post('/deletequestion/{question_id}')
-def deletequestion(request: Request, question_id: str):
-    if handle_user(request):
-        return handle_user(request)
+@app.post('/savequestionsorder')
+def savequestionsorder(request: Request, body: Any = Body(None)):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
+    if not isinstance(body, dict):
+        body = {}
+    if 'groups' in body and isinstance(body['groups'], list):
+        for group in body['groups']:
+            sid = group.get('section', '-')
+            ids = group.get('ids', [])
+            for index, qid in enumerate(ids):
+                if qid in questions:
+                    if sid in sections:
+                        questions[qid]['section'] = sid
+                    questions[qid]['order'] = index
+    else:
+        order = body.get('order', [])
+        for index, qid in enumerate(order):
+            if qid in questions:
+                questions[qid]['order'] = index
+    save_questions()
+    return JSONResponse(content={'success': True}, status_code=200)
+
+@app.post('/saveresourcesorder')
+def saveresourcesorder(request: Request, body: Any = Body(None)):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
+    user = request.cookies.get('username')
+    if user != 'admin':
+        return RedirectResponse(url='/')
+    order = body.get('order', []) if isinstance(body, dict) else []
+    for index, rid in enumerate(order):
+        if rid in resources:
+            resources[rid]['order'] = index
+    save_resources()
+    return JSONResponse(content={'success': True}, status_code=200)
+
+@app.post('/deletequestion/{question_id}')
+def deletequestion(request: Request, question_id: str):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
+    user = request.cookies.get('username')
+    if user != 'admin':
+        return RedirectResponse(url='/')
+    if question_id not in questions:
+        return JSONResponse(content={'error': 'Question not found'}, status_code=404)
     del questions[question_id]
     save_questions()
-    content = replace_keywords(content, current_user=user)
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.get('/addresource')
 def addresource(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -510,8 +646,9 @@ def addresource(request: Request):
 
 @app.get('/editresource/{resource_id}')
 def editresource(request: Request, resource_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -526,6 +663,7 @@ def editresource(request: Request, resource_id: str):
                                text=resource['text'],
                                id=resource_id,
                                order=resource.get('order', 0),
+                               tags=', '.join(normalize_tags(resource.get('tags', []))),
                                add_hidden='hidden')
 
     content = remove_templates(content)
@@ -535,8 +673,9 @@ def editresource(request: Request, resource_id: str):
 
 @app.post('/addresource')
 def addresourcepost(request: Request, resource: Any = Body(None)):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -546,10 +685,17 @@ def addresourcepost(request: Request, resource: Any = Body(None)):
         resource['id'] = id
     else:
         id = resource['id']
-    try:
-        resource['order'] = int(resource.get('order', 0))
-    except (ValueError, TypeError):
-        resource['order'] = 0
+    if 'order' not in resource:
+        if id in resources:
+            resource['order'] = resources[id].get('order', 0)
+        else:
+            resource['order'] = max([r.get('order', 0) for r in resources.values()], default=-1) + 1
+    else:
+        try:
+            resource['order'] = int(resource.get('order', 0))
+        except (ValueError, TypeError):
+            resource['order'] = 0
+    resource['tags'] = normalize_tags(resource.get('tags', []))
     resources[id] = resource
 
     save_resources()
@@ -557,8 +703,9 @@ def addresourcepost(request: Request, resource: Any = Body(None)):
 
 @app.get('/listresources')
 def listresources(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -566,33 +713,38 @@ def listresources(request: Request):
         content = f.read()
     content = replace_keywords(content, current_user=user)
     resource_template, before, after = get_group(content, 'resource')
-    sorted_resources = sorted(resources.items(), key=lambda x: x[1].get('order', 0))
+    sorted_resources = sorted(resources.items(), key=lambda x: (x[1].get('order', 0), x[0]))
     for id, resource in sorted_resources:
+        tags = normalize_tags(resource.get('tags', []))
         resource_content = replace_keywords(resource_template,
                                             id=id,
                                             title=resource['title'],
-                                            text=resource['text'],
-                                            order=resource.get('order', 0))
+                                            order=resource.get('order', 0),
+                                            tags=', '.join(tags),
+                                            tags_attr=', '.join(tags))
         before += resource_content
     content = before + after
     return HTMLResponse(content=content)
 
 @app.post('/deleteresource/{resource_id}')
 def deleteresource(request: Request, resource_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
+    if resource_id not in resources:
+        return JSONResponse(content={'error': 'Resource not found'}, status_code=404)
     del resources[resource_id]
     save_resources()
-    content = replace_keywords(content, current_user=user)
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.get('/resource/{resource_id}')
 def get_resource(request: Request, resource_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     if resource_id not in resources:
@@ -601,10 +753,28 @@ def get_resource(request: Request, resource_id: str):
 
     with open('templates/resource.html') as f:
         content = f.read()
-    
-    import re
-    text = resource['text']
 
+    text = render_resource_text(resource['text'])
+
+    content = replace_keywords(content,
+                               current_user=user,
+                               title=resource['title'],
+                               text=text)
+
+    return HTMLResponse(content=content)
+
+@app.post('/previewresource')
+def previewresource(request: Request, body: Any = Body(None)):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
+    user = request.cookies.get('username')
+    if user != 'admin':
+        return JSONResponse({'error': 'Not allowed'}, status_code=403)
+    text = body.get('text', '') if isinstance(body, dict) else ''
+    return JSONResponse(content={'html': render_resource_text(text)})
+
+def render_resource_text(text):
     text = re.sub(r'^\| (.+)$', r'<p class="round">\1</p>', text, flags=re.MULTILINE)
 
     text = re.sub(r'```\n([^`]+?)\n---\n([^`]+?)\n```',
@@ -648,17 +818,13 @@ def get_resource(request: Request, resource_id: str):
 
     text = markdown.markdown(text)
 
-    content = replace_keywords(content,
-                               current_user=user,
-                               title=resource['title'],
-                               text=text)
-
-    return HTMLResponse(content=content)
+    return text
 
 @app.get('/listsections')
 def listsections(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
@@ -667,70 +833,93 @@ def listsections(request: Request):
         content = f.read()
     content = replace_keywords(content, current_user=user)
     section_template, before, after = get_group(content, 'section')
-    for id in sections:
-        section = sections[id]
-        question_list = []
-        for question_id in questions:
-            question = questions[question_id]
-            if question['section'] == id:
-                question_list.append(question['title'])
+    sorted_sections = sorted(sections.items(), key=lambda x: (x[1].get('order', 0), x[0]))
+    for id, section in sorted_sections:
         section_content = replace_keywords(section_template,
                                            id=id,
                                            title=section['title'],
-                                           type='resource' if section['resource'] else '',
                                            visible='checked' if section['visible'] else '',
                                            active='checked' if section['active'] else '',
-                                           points='checked' if section['points'] else '',
-                                           resource='checked' if section['resource'] else '',
-                                           order=section['order'],
-                                           questions=', '.join(question_list))
+                                           points='checked' if section['points'] else '')
         before += section_content
     content = before + after
     return HTMLResponse(content=content)
 
 @app.post('/addsection')
 def addsection(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
     id = str(max(map(int, sections.keys())) + 1) if sections.keys() else '0'
-    sections[id] = {'title': 'New Section', 'visible': False, 'active': False, 'points': False, 'resource': False, 'order': 0}
+    max_order = max([s.get('order', 0) for s in sections.values()], default=-1)
+    sections[id] = {'title': 'New Section', 'visible': False, 'active': False, 'points': False, 'order': max_order + 1}
     save_sections()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.post('/savesections')
 def savesections(request: Request, new_sections: Any = Body(None)):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
     global sections
+    if not isinstance(new_sections, dict):
+        new_sections = {}
+    for sid, s in new_sections.items():
+        if 'order' not in s and sid in sections:
+            s['order'] = sections[sid].get('order', 0)
+        try:
+            s['order'] = int(s.get('order', 0))
+        except (ValueError, TypeError):
+            s['order'] = 0
     sections = new_sections
+    save_sections()
+    return JSONResponse(content={'success': True}, status_code=200)
+
+@app.post('/savesectionsorder')
+def savesectionsorder(request: Request, body: Any = Body(None)):
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
+    user = request.cookies.get('username')
+    if user != 'admin':
+        return RedirectResponse(url='/')
+    order = body.get('order', []) if isinstance(body, dict) else []
+    for index, sid in enumerate(order):
+        if sid in sections:
+            sections[sid]['order'] = index
     save_sections()
     return JSONResponse(content={'success': True}, status_code=200)
 
 @app.post('/deletesection/{id}')
 def deletesection(request: Request, id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
+    if id not in sections:
+        return JSONResponse(content={'error': 'Section not found'})
     for question_id in questions:
-        if questions[question_id]['section'] == id:
+        if questions[question_id].get('section') == id:
             break
     else:
         del sections[id]
+        save_sections()
         return JSONResponse(content={'success': True}, status_code=200)
     return JSONResponse(content={'error': 'The section has questions'})
 
 @app.get('/section/{section_id}')
 def getsection(request: Request, section_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     with open('templates/section.html') as f:
@@ -740,9 +929,6 @@ def getsection(request: Request, section_id: str):
     if section_id not in sections or sections[section_id]['active'] == False or sections[section_id]['visible'] == False:
         if user != 'admin':
             return RedirectResponse('/')
-    
-    if sections[section_id]['resource']:
-        return RedirectResponse('/resources')
     content = replace_keywords(content, type='question')
 
     question_template, before, after = get_group(content, 'question')
@@ -767,12 +953,15 @@ def getsection(request: Request, section_id: str):
 
 @app.get('/question/{question_id}')
 def get_question(request: Request, question_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
+    if question_id not in questions:
+        return RedirectResponse(url='/')
     question = questions[question_id]
-    section = sections[question['section']]
-    if not section['active'] or not section['visible']:
+    section = sections.get(question.get('section'), {})
+    if not section.get('active') or not section.get('visible'):
         if user != 'admin':
             return RedirectResponse('/')
 
@@ -818,7 +1007,7 @@ def get_question(request: Request, question_id: str):
     sample_template, before, after = get_group(content, 'sample')
     if 'testcases' in question:
         for testcase in question['testcases']:
-            if not 'show' in testcase or testcase['show']:
+            if 'show' not in testcase or testcase['show']:
                 before += replace_keywords(sample_template, input=testcase['input'], output=testcase['output'])
     content = before + after
 
@@ -827,12 +1016,15 @@ def get_question(request: Request, question_id: str):
 
 @app.post('/question/{question_id}')
 def evaluate(request: Request, question_id: str, answer: Answer):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
+    if question_id not in questions:
+        return RedirectResponse(url='/')
     question = questions[question_id]
-    section = sections[question['section']]
-    if not section['active'] or not section['visible']:
+    section = sections.get(question.get('section'), {})
+    if not section.get('active') or not section.get('visible'):
         if user != 'admin':
             return JSONResponse({'error': 'Not allowed'})
 
@@ -856,46 +1048,52 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                 if question['type'] in ['outputonly', 'checker', 'codegolf'] and node.func.id == 'input':
                     return JSONResponse({'error': f'Do not use input'})
 
-    except:
+    except Exception:
         pass
 
     def get(filename):
-        with open(dir + '/' + filename) as f:
+        with open(workdir + '/' + filename) as f:
             data = f.read()
         return data
 
     points = 0
     msg = ''
-    dir = f'tmp/{user}'
-    os.system(f'mkdir -p {dir}')
-    os.system(f'rm -f {dir}/*')
+    workdir = f'tmp/{user}'
+    os.makedirs(workdir, exist_ok=True)
+    for _tmp_file in os.listdir(workdir):
+        _tmp_path = os.path.join(workdir, _tmp_file)
+        if os.path.isfile(_tmp_path):
+            os.remove(_tmp_path)
     for envfile in question['envfiles'].split(','):
         if envfile:
-            os.system(f'cp files/{envfile.strip()} {dir}/{envfile.strip()}')
+            _env_name = os.path.basename(envfile.strip())
+            _env_src = os.path.join('files', _env_name)
+            if os.path.isfile(_env_src):
+                shutil.copy(_env_src, os.path.join(workdir, _env_name))
 
     if question['type'] == 'solution':
-        with open(dir + '/solution.py', 'w') as f:
+        with open(workdir + '/solution.py', 'w') as f:
             f.write(question['solution'])
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
             f.write(answer.input + '\n')
             f.write(question['postsolution'])
-        with open(dir + '/generator.py', 'w') as f:
+        with open(workdir + '/generator.py', 'w') as f:
             f.write(question['generator'])
 
         def checking_stream():
             for i in range(100):
                 yield json.dumps({'checking': i+1}) + '\n'
-                result = os.system(f'cd {dir}; python3 generator.py > input.txt 2> generator_error.txt')
+                result = os.system(f'cd {workdir}; python3 generator.py > input.txt 2> generator_error.txt')
                 if result:
-                    yield json.dumps({'error': 'An error occured when generating input: ' + get('generator_error.txt')}) + '\n'
+                    yield json.dumps({'error': 'An error occurred when generating input: ' + get('generator_error.txt')}) + '\n'
                     return
 
-                with open(f'{dir}/output.txt', 'w') as f:
+                with open(f'{workdir}/output.txt', 'w') as f:
                     f.write('No output is generated')
-                with open(f'{dir}/error.txt', 'w') as f:
+                with open(f'{workdir}/error.txt', 'w') as f:
                     f.write('No error is generated')
-                result = os.system(f'cd {dir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
+                result = os.system(f'cd {workdir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
                 if result:
                     if result == 31744:
                         yield json.dumps({'error': 'Took too long to execute', 'input': get('input.txt')}) + '\n'
@@ -904,12 +1102,12 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                         yield json.dumps({'error': get('error.txt'), 'input': get('input.txt')}) + '\n'
                         return
 
-                result = os.system(f'cd {dir}; python3 solution.py < input.txt > expected.txt 2> solution_error.txt')
+                result = os.system(f'cd {workdir}; python3 solution.py < input.txt > expected.txt 2> solution_error.txt')
                 if result:
-                    yield json.dumps({'error': 'An error occured when generating solution: ' + get('solution_error.txt')}) + '\n'
+                    yield json.dumps({'error': 'An error occurred when generating solution: ' + get('solution_error.txt')}) + '\n'
                     return
 
-                if os.system(f'diff -w {dir}/output.txt {dir}/expected.txt > /dev/null'):
+                if os.system(f'diff -w {workdir}/output.txt {workdir}/expected.txt > /dev/null'):
                     yield json.dumps({'input': get('input.txt'), 'output': get('output.txt'), 'expected': get('expected.txt')})  + '\n'
                     return
 
@@ -922,18 +1120,16 @@ def evaluate(request: Request, question_id: str, answer: Answer):
         return StreamingResponse(checking_stream(), media_type="application/json", headers={"stream": "true"})
 
     elif question['type'] == 'checker':
-        with open(dir + '/checker.py', 'w') as f:
+        with open(workdir + '/checker.py', 'w') as f:
             f.write(question['checker'])
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
             f.write(answer.input + '\n')
             f.write(question['postsolution'])
-        with open(f'{dir}/output.txt', 'w') as f:
+        with open(f'{workdir}/output.txt', 'w') as f:
             f.write('No output is generated')
 
-        result = os.system(f'cd {dir}; python3 checker.py > output.txt 2> error.txt')
-        print('Result:', result)
-        print('Output: ', get('output.txt'))
+        result = os.system(f'cd {workdir}; python3 checker.py > output.txt 2> error.txt')
         if result:
             error = get('error.txt')
             output = get('output.txt')
@@ -948,16 +1144,16 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                 try:
                     points, msg = get('output.txt').split('|')
                     points = float(points)
-                except Exception as e:
+                except Exception:
                     return JSONResponse({'error': ''})
     elif question['type'] == 'outputonly':
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
             f.write(answer.input + '\n')
             f.write(question['postsolution'])
-        with open(f'{dir}/output.txt', 'w') as f:
+        with open(f'{workdir}/output.txt', 'w') as f:
             f.write('No output is generated')
-        error_code = os.system(f'cd {dir}; python3 code.py > output.txt 2> error.txt')
+        error_code = os.system(f'cd {workdir}; python3 code.py > output.txt 2> error.txt')
 
         if error_code:
             error = get('error.txt')
@@ -974,27 +1170,27 @@ def evaluate(request: Request, question_id: str, answer: Answer):
             else:
                 points = 1
     elif question['type'] == 'guessinput':
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(answer.input)
         if answer.input.strip() == question['input'].strip():
             points = 1
         else:
             points = 0
     elif question['type'] == 'testcaseonly':
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
             f.write(answer.input + '\n')
             f.write(question['postsolution'])
 
         for testcase in question['testcases']:
-            with open(f'{dir}/output.txt', 'w') as f:
+            with open(f'{workdir}/output.txt', 'w') as f:
                 f.write('No output is generated')
-            with open(f'{dir}/error.txt', 'w') as f:
+            with open(f'{workdir}/error.txt', 'w') as f:
                 f.write('No error is generated')
-            with open(f'{dir}/input.txt', 'w') as f:
+            with open(f'{workdir}/input.txt', 'w') as f:
                 f.write(testcase['input'])
 
-            result = os.system(f'cd {dir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
+            result = os.system(f'cd {workdir}; timeout 1s python3 code.py < input.txt > output.txt 2> error.txt')
             if result:
                 if result == 31744:
                     return JSONResponse({'error': 'Took too long to execute', 'input': get('input.txt')})
@@ -1012,13 +1208,13 @@ def evaluate(request: Request, question_id: str, answer: Answer):
                     return JSONResponse({'error': 'Your output is not correct on a hidden testcase'})
         points = 1
     elif question['type'] == 'codegolf':
-        with open(dir + '/code.py', 'w') as f:
+        with open(workdir + '/code.py', 'w') as f:
             f.write(question['presolution'] + '\n')
             f.write(answer.input + '\n')
             f.write(question['postsolution'])
-        with open(f'{dir}/output.txt', 'w') as f:
+        with open(f'{workdir}/output.txt', 'w') as f:
             f.write('No output is generated')
-        error_code = os.system(f'cd {dir}; python3 code.py > output.txt 2> error.txt')
+        error_code = os.system(f'cd {workdir}; python3 code.py > output.txt 2> error.txt')
 
         if error_code:
             error = get('error.txt')
@@ -1063,8 +1259,9 @@ def evaluate(request: Request, question_id: str, answer: Answer):
 
 @app.post('/judge')
 def submit_judge(request: Request, body: Any = Body(None)):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return JSONResponse({'error': 'Not allowed'})
@@ -1075,7 +1272,6 @@ def submit_judge(request: Request, body: Any = Body(None)):
         body['points'] = 0
 
     if body['question_id'] not in users[body['username']]['solves']:
-        print('here')
         users[body['username']]['solves'][body['question_id']] = {
             'best_solution': {'time': '', 'code': ''}, 
             'tries': [{
@@ -1095,8 +1291,9 @@ def submit_judge(request: Request, body: Any = Body(None)):
 
 @app.get('/scoreboard')
 def get_scoreboard(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     with open('templates/scoreboard.html') as f:
@@ -1107,13 +1304,13 @@ def get_scoreboard(request: Request):
     sorted_sections = []
     for section_id in sections:
         section = sections[section_id]
-        if section['visible'] and not section['resource']:
-            sorted_sections.append((section['order'], section_id))
+        if section['visible']:
+            sorted_sections.append((section.get('order', 0), section_id))
     sorted_sections.sort()
 
     section_sides = []
     for _, section_id in sorted_sections:
-        sorted_questions = sorted(questions.items(), key=lambda q: q[1]['order'])
+        sorted_questions = sorted(questions.items(), key=lambda q: (q[1].get('order', 0), q[0]))
         for question_id, question in sorted_questions:
             if question['section'] == section_id:
                 active_questions.append(question_id)
@@ -1183,10 +1380,15 @@ def get_scoreboard(request: Request):
 
 @app.get('/viewcode/{username}/{question_id}')
 def viewcode(request: Request, username: str, question_id: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
+    if question_id not in questions:
+        return RedirectResponse('/scoreboard')
+    if username != 'solution' and username not in users:
+        return RedirectResponse('/scoreboard')
     user_point = 0 if question_id not in users[user]['solves'] else users[user]['solves'][question_id]['points']
     expected = questions[question_id]['points']
     if user_point < expected and user != 'admin':
@@ -1217,8 +1419,9 @@ def viewcode(request: Request, username: str, question_id: str):
 
 @app.get('/files')
 def files(request: Request):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
     with open('templates/files.html') as f:
@@ -1234,37 +1437,48 @@ def files(request: Request):
 
 @app.get('/editfile/{filename}')
 def show_file(request: Request, filename: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
 
+    if not is_safe_filename(filename):
+        return RedirectResponse(url='/files')
     with open('templates/editfile.html') as f:
         content = f.read()
     content = replace_keywords(content, current_user=user)
 
-    file_content = open(f'files/{filename}').read()
+    with open(os.path.join('files', filename)) as f:
+        file_content = f.read()
     content = replace_keywords(content, filename=filename, file_content=file_content)
     
     return HTMLResponse(content=content)
 
 @app.post('/editfile/{filename}')
 def newfile(request: Request, filename: str, body: Any = Body(None)):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
-    print("Editfile: ", filename)
-    with open('files/' + filename, 'w') as f:
+    if not is_safe_filename(filename):
+        return JSONResponse(content={'error': 'Invalid filename'}, status_code=400)
+    with open(os.path.join('files', filename), 'w') as f:
         f.write(body['content'])
     return JSONResponse(content='{}')
 
 @app.post('/deletefile/{filename}')
 def deletefile(request: Request, filename: str):
-    if handle_user(request):
-        return handle_user(request)
+    auth_response = handle_user(request)
+    if auth_response:
+        return auth_response
     user = request.cookies.get('username')
     if user != 'admin':
         return RedirectResponse(url='/')
-    os.system(f'rm -f files/{filename}')
+    if not is_safe_filename(filename):
+        return JSONResponse(content={'error': 'Invalid filename'}, status_code=400)
+    _delete_path = os.path.join('files', filename)
+    if os.path.isfile(_delete_path):
+        os.remove(_delete_path)
     return JSONResponse(content='{}')

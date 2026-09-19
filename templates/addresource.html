@@ -6,6 +6,17 @@
 			textarea {
 				font-size: 16px;
 			}
+			.split { display: flex; gap: 10px; align-items: stretch; }
+			.split > .round { margin-top: 0; }
+			.split-code { width: 50%; box-sizing: border-box; }
+			.split-preview { width: 50%; box-sizing: border-box; overflow: auto; max-height: 600px; background-color: #fff; }
+			.split.mode-code .split-preview { display: none; }
+			.split.mode-code .split-code { width: 100%; }
+			.split.mode-preview .split-code { display: none; }
+			.split.mode-preview .split-preview { width: 100%; }
+			.view-btn { font-size: 14px; padding: 6px 12px; margin-top: 0; }
+			.view-btn.active { background-color: #3F72AF; border-color: #3F72AF; }
+			.view-btn svg { display: block; }
 		</style>
 	</head>
 	<body>
@@ -24,8 +35,14 @@
 		<div class="round">
 			<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required>
 		</div>
-		<div class="round">
-			<textarea style="width: 100%" rows="25" placeholder=
+		<div id="resource-viewbar" style="display: flex; gap: 8px; margin-bottom: 8px;">
+			<div class="button view-btn" data-mode="code" title="Code" onclick="setResourceView('code')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+			<div class="button view-btn" data-mode="preview" title="Preview" onclick="setResourceView('preview')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+			<div class="button view-btn active" data-mode="split" title="Side by side" onclick="setResourceView('split')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
+		</div>
+		<div class="split" id="resource-split">
+			<div class="round split-code">
+				<textarea style="width: 100%; box-sizing: border-box;" rows="25" placeholder=
 "Type resource here
 			
 For code, type:
@@ -41,10 +58,12 @@ Input
 ```
 " id="text">{{text}}</textarea>
 
+			</div>
+			<div class="round split-preview" id="preview"></div>
 		</div>
 
 		<div class="round">
-			<input id="order" type="number" name="order" value="{{order}}" placeholder="Order" required style="width: 100%; font-size: 22px;">
+			<input id="tags" type="text" name="tags" value="{{tags}}" placeholder="Tags, comma separated" style="width: 100%; font-size: 18px;">
 		</div>
 
 		<div class="button" onclick="addquestion('-1')" {{add_hidden}}> Add Resource </div>
@@ -52,17 +71,50 @@ Input
 	</div>
 	</body>
 	<script>
+		var previewTimer = null;
+		function updatePreview() {
+			var text = document.getElementById("text").value;
+			fetch("/previewresource", {
+				method: "POST",
+				body: JSON.stringify({text: text}),
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then(response => response.json()).then(data => {
+				document.getElementById("preview").innerHTML = data.html || "";
+			})
+		}
+		document.getElementById("text").addEventListener("input", function() {
+			clearTimeout(previewTimer);
+			previewTimer = setTimeout(updatePreview, 300);
+		});
+		updatePreview();
+
+		function setResourceView(mode) {
+			var split = document.getElementById("resource-split");
+			split.classList.remove("mode-code", "mode-preview");
+			if (mode === "code") split.classList.add("mode-code");
+			if (mode === "preview") {
+				split.classList.add("mode-preview");
+				clearTimeout(previewTimer);
+				updatePreview();
+			}
+			document.querySelectorAll("#resource-viewbar .view-btn").forEach(function(b) {
+				b.classList.toggle("active", b.getAttribute("data-mode") === mode);
+			});
+		}
+
 		function addquestion(id) {
 
 			var title = document.getElementById("title").value;
 			var text = document.getElementById("text").value;
-			var order = Number(document.getElementById("order").value);
+			var tags = document.getElementById("tags").value.split(",").map(function(t) { return t.trim(); }).filter(function(t) { return t; });
 
 			var question = {
 				id: id,
 				title: title,
 				text: text,
-				order: order
+				tags: tags
 			}
 			fetch("/addresource", {
 				method: "POST",

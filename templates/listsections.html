@@ -2,11 +2,23 @@
 <html>
 	<head>
 		<title>İşte İsar</title>
-		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
 		<style>
-			.resource {
-				background-color: #dfefdc;
-			}
+			#orderstatus { font-size: 14px; font-family: monospace; margin-top: 8px; padding: 0 30px; }
+			#orderstatus:empty { display: none; }
+			#section_list { display: flex; flex-direction: column; padding: 10px 30px 30px 30px; }
+			.item-row { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 6px 12px; box-sizing: border-box; }
+			.item-row.dragging { opacity: 0.5; }
+			.item-row.dragover { border-color: #44CF6C; }
+			.drag-handle { cursor: grab; font-size: 18px; user-select: none; padding: 0 5px; }
+			.item-main { flex: 1; min-width: 0; }
+			.item-main input[type="text"] { width: 100%; font-size: 16px; font-weight: bold; padding: 6px 8px; box-sizing: border-box; }
+			.item-checks { display: flex; gap: 12px; align-items: center; margin-left: auto; white-space: nowrap; font-size: 14px; }
+			.item-checks label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+			.item-actions { display: flex; gap: 8px; }
+			.item-actions .button { font-size: 13px; margin-top: 0; padding: 6px 10px; }
+			.footer-buttons { display: flex; gap: 10px; padding: 0 30px 30px 30px; }
+			.footer-buttons .button { flex: 1; font-size: 18px; }
 		</style>
 	</head>
 	<body>
@@ -21,24 +33,30 @@
 			<a href="/scoreboard">Scoreboard</a>
 			<a class="right" href="/login">{{current_user}}</a>
 		</div>
-		<div id="section_list" style="display: flex; flex-flow: row wrap;">
+		<div id="orderstatus"></div>
+		<div id="section_list">
 <!-- section -->
-			<div class="hcenter round {{type}}" style="margin-top: 30px; width: 45%;">
-				<input type="hidden" name="id" id="id" value="{{id}}">
-				<input style="font-size: 30px; padding: 10px; width: 90%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required> <br>
-				Questions: {{questions}} <br>
-				Visible: <input type="checkbox" name="visible" id="visible" {{visible}}> <br>
-				Active: <input type="checkbox" name="active" id="active" {{active}}> <br>
-				Points: <input type="checkbox" name="points" id="points" {{points}}> <br>
-				Resource: <input type="checkbox" name="resource" id="resource" {{resource}}> <br>
-				Order: <input type="number" name="order" id="order" value="{{order}}"> <br>
-				<div class="button" onclick="del('{{id}}')">Delete</div>
+			<div class="round item-row" draggable="true" data-id="{{id}}">
+				<span class="drag-handle" title="Drag to reorder">☰</span>
+				<div class="item-main">
+					<input type="text" name="title" placeholder="Title" value="{{title}}" required>
+				</div>
+				<div class="item-checks">
+					<label>Visible <input type="checkbox" name="visible" {{visible}}></label>
+					<label>Active <input type="checkbox" name="active" {{active}}></label>
+					<label>Points <input type="checkbox" name="points" {{points}}></label>
+				</div>
+				<div class="item-actions">
+					<div class="button" onclick="del('{{id}}')">Delete</div>
+				</div>
 			</div>
 <!-- section end -->
 		</div>
 
-		<div class="button" onclick="add()">Add Section</div>
-		<div class="button" onclick="save()">Save</div>
+		<div class="footer-buttons">
+			<div class="button" onclick="add()">Add Section</div>
+			<div class="button" onclick="save()">Save</div>
+		</div>
 	</body>
 	<script>
 		function del(id) {
@@ -70,23 +88,85 @@
 			})
 		}
 
+		var list = document.getElementById("section_list");
+		var status = document.getElementById("orderstatus");
+		var dragged = null;
+		var startSnapshot = null;
+
+		function snapshot() {
+			var parts = [];
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				parts.push(row.getAttribute("data-id"));
+			});
+			return parts.join("|");
+		}
+
+		list.querySelectorAll(".item-row").forEach(function(row) {
+			row.addEventListener("dragstart", function(e) {
+				dragged = row;
+				startSnapshot = snapshot();
+				row.classList.add("dragging");
+				e.dataTransfer.effectAllowed = "move";
+				try { e.dataTransfer.setData("text/plain", row.getAttribute("data-id")); } catch (err) {}
+			});
+			row.addEventListener("dragend", function() {
+				row.classList.remove("dragging");
+				list.querySelectorAll(".item-row").forEach(function(r) { r.classList.remove("dragover"); });
+				if (dragged === row && startSnapshot !== null && snapshot() !== startSnapshot) {
+					saveOrder();
+				}
+				if (dragged === row) { dragged = null; startSnapshot = null; }
+			});
+			row.addEventListener("dragover", function(e) {
+				if (!dragged || dragged === row) return;
+				e.preventDefault();
+				row.classList.add("dragover");
+				var rect = row.getBoundingClientRect();
+				var after = (e.clientY - rect.top) > rect.height / 2;
+				if (after) {
+					list.insertBefore(dragged, row.nextSibling);
+				} else {
+					list.insertBefore(dragged, row);
+				}
+			});
+			row.addEventListener("dragleave", function() {
+				row.classList.remove("dragover");
+			});
+			row.addEventListener("drop", function(e) {
+				e.preventDefault();
+				row.classList.remove("dragover");
+			});
+		});
+
+		function saveOrder() {
+			var ids = [];
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				ids.push(row.getAttribute("data-id"));
+			});
+			status.innerText = "Saving order...";
+			fetch("/savesectionsorder", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ order: ids })
+			}).then(function(r) { return r.json(); }).then(function(data) {
+				status.innerText = data.success ? "Order saved." : "Save failed.";
+			}).catch(function() {
+				status.innerText = "Save failed.";
+			});
+		}
+
 		function save() {
 			var sections = {};
-			var section_list = document.getElementById("section_list");
-
-			for (var i = 0; i < section_list.children.length; i++) {
-				var section = section_list.children[i];
-				console.log(section);
-				sections[section.children[0].value] = {
-					title: section.children[1].value,
-					visible: section.children[4].checked,
-					active: section.children[6].checked,
-					points: section.children[8].checked,
-					resource: section.children[10].checked,
-					order: Number(section.children[12].value)
+			list.querySelectorAll(".item-row").forEach(function(row, index) {
+				var id = row.getAttribute("data-id");
+				sections[id] = {
+					title: row.querySelector('input[name="title"]').value,
+					visible: row.querySelector('input[name="visible"]').checked,
+					active: row.querySelector('input[name="active"]').checked,
+					points: row.querySelector('input[name="points"]').checked,
+					order: index
 				}
-			}
-			console.log(sections);
+			});
 			fetch("/savesections", {
 				method: "POST",
 				headers: {

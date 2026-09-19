@@ -1,0 +1,318 @@
+Hafta 1.
+Sipay Bodrum FK  0 - 1  Gaziantep FK
+Çaykur Rizespor  1 - 1  Rams Başakşehir
+Corendon Alanyaspor  1 - 1  ikas Eyüpspor
+Reeder Samsunspor  0 - 2  Beşiktaş
+Net Global Sivasspor  0 - 0  Trabzonspor
+Onvo Antalyaspor  0 - 0  Göztepe
+Fenerbahçe  1 - 0  Adana Demirspor
+Kasımpaşa  2 - 3  Tümosan Konyaspor
+Galatasaray  2 - 1  Atakaş Hatayspor
+
+Hafta 2.
+ikas Eyüpspor  4 - 1  Sipay Bodrum FK
+Atakaş Hatayspor  1 - 1  Kasımpaşa
+Beşiktaş  4 - 2  Onvo Antalyaspor
+Gaziantep FK  0 - 1  Reeder Samsunspor
+Rams Başakşehir  4 - 2  Corendon Alanyaspor
+Adana Demirspor  1 - 2  Çaykur Rizespor
+Göztepe  2 - 2  Fenerbahçe
+Bellona Kayserispor  1 - 2  Net Global Sivasspor
+Tümosan Konyaspor  1 - 2  Galatasaray
+
+Hafta 3.
+Trabzonspor  2 - 2  Bellona Kayserispor
+Reeder Samsunspor  2 - 0  Rams Başakşehir
+Galatasaray  3 - 1  Gaziantep FK
+Onvo Antalyaspor  3 - 2  Atakaş Hatayspor
+Çaykur Rizespor  0 - 5  Fenerbahçe
+Kasımpaşa  2 - 2  Adana Demirspor
+Sipay Bodrum FK  3 - 1  Tümosan Konyaspor
+Net Global Sivasspor  0 - 1  ikas Eyüpspor
+Corendon Alanyaspor  1 - 1  Göztepe
+
+Hafta 4.
+Beşiktaş  2 - 0  Net Global Sivasspor
+Atakaş Hatayspor  0 - 3  Reeder Samsunspor
+ikas Eyüpspor  0 - 0  Trabzonspor
+Rams Başakşehir  5 - 2  Onvo Antalyaspor
+Adana Demirspor  1 - 5  Galatasaray
+Göztepe  2 - 0  Sipay Bodrum FK
+Çaykur Rizespor  0 - 1  Kasımpaşa
+Tümosan Konyaspor  0 - 0  Bellona Kayserispor
+Fenerbahçe  3 - 0  Corendon Alanyaspor
+
+Hafta 5.
+Onvo Antalyaspor  2 - 1  Adana Demirspor
+Corendon Alanyaspor  0 - 0  Atakaş Hatayspor
+Trabzonspor  1 - 1  Beşiktaş
+Kasımpaşa  0 - 2  Fenerbahçe
+Bellona Kayserispor  2 - 2  ikas Eyüpspor
+Sipay Bodrum FK  0 - 1  Rams Başakşehir
+Galatasaray  5 - 0  Çaykur Rizespor
+Reeder Samsunspor  0 - 1  Tümosan Konyaspor
+Net Global Sivasspor  3 - 2  Gaziantep FK
+
+Hafta 6.
+Gaziantep FK  0 - 0  Trabzonspor
+Göztepe  3 - 0  Bellona Kayserispor
+Adana Demirspor  0 - 2  Corendon Alanyaspor
+Beşiktaş  2 - 1  ikas Eyüpspor
+Çaykur Rizespor  0 - 1  Reeder Samsunspor
+Kasımpaşa  0 - 0  Onvo Antalyaspor
+Fenerbahçe  1 - 3  Galatasaray
+Tümosan Konyaspor  0 - 0  Net Global Sivasspor
+Atakaş Hatayspor  0 - 1  Sipay Bodrum FK
+
+Hafta 7.
+Bellona Kayserispor  0 - 3  Beşiktaş
+Onvo Antalyaspor  0 - 2  Fenerbahçe
+Sipay Bodrum FK  3 - 1  Adana Demirspor
+ikas Eyüpspor  3 - 2  Gaziantep FK
+Trabzonspor  3 - 2  Tümosan Konyaspor
+Corendon Alanyaspor  1 - 0  Çaykur Rizespor
+Galatasaray  3 - 3  Kasımpaşa
+Reeder Samsunspor  4 - 3  Göztepe
+Net Global Sivasspor  1 - 2  Rams Başakşehir
+
+Hafta 8.
+Galatasaray  1 - 0  Corendon Alanyaspor
+Gaziantep FK  1 - 1  Beşiktaş
+Adana Demirspor  1 - 3  Reeder Samsunspor
+Tümosan Konyaspor  2 - 1  ikas Eyüpspor
+Atakaş Hatayspor  1 - 1  Trabzonspor
+Rams Başakşehir  1 - 1  Bellona Kayserispor
+Göztepe  3 - 2  Net Global Sivasspor
+Kasımpaşa  0 - 0  Sipay Bodrum FK
+Çaykur Rizespor  2 - 1  Onvo Antalyaspor
+
+Hafta 9.
+Sipay Bodrum FK  0 - 1  Çaykur Rizespor
+Corendon Alanyaspor  1 - 2  Kasımpaşa
+Reeder Samsunspor  2 - 2  Fenerbahçe
+Beşiktaş  2 - 0  Tümosan Konyaspor
+Net Global Sivasspor  3 - 2  Atakaş Hatayspor
+Onvo Antalyaspor  0 - 3  Galatasaray
+ikas Eyüpspor  1 - 0  Göztepe
+Trabzonspor  1 - 0  Rams Başakşehir
+Bellona Kayserispor  2 - 2  Gaziantep FK
+
+Hafta 10.
+Galatasaray  2 - 1  Beşiktaş
+Rams Başakşehir  1 - 1  ikas Eyüpspor
+Fenerbahçe  2 - 0  Sipay Bodrum FK
+Corendon Alanyaspor  1 - 2  Onvo Antalyaspor
+Gaziantep FK  3 - 1  Tümosan Konyaspor
+Göztepe  2 - 1  Trabzonspor
+Kasımpaşa  1 - 4  Reeder Samsunspor
+Atakaş Hatayspor  0 - 1  Bellona Kayserispor
+Adana Demirspor  2 - 4  Net Global Sivasspor
+
+Hafta 11.
+Reeder Samsunspor  2 - 0  Onvo Antalyaspor
+Trabzonspor  2 - 3  Fenerbahçe
+Sipay Bodrum FK  0 - 0  Corendon Alanyaspor
+ikas Eyüpspor  2 - 0  Atakaş Hatayspor
+Tümosan Konyaspor  3 - 2  Rams Başakşehir
+Beşiktaş  1 - 3  Kasımpaşa
+Bellona Kayserispor  0 - 0  Adana Demirspor
+Net Global Sivasspor  2 - 1  Çaykur Rizespor
+Gaziantep FK  2 - 1  Göztepe
+
+Hafta 12.
+Fenerbahçe  4 - 0  Net Global Sivasspor
+Rams Başakşehir  0 - 0  Beşiktaş
+Galatasaray  3 - 2  Reeder Samsunspor
+Göztepe  2 - 0  Tümosan Konyaspor
+Adana Demirspor  0 - 1  ikas Eyüpspor
+Çaykur Rizespor  3 - 1  Trabzonspor
+Atakaş Hatayspor  3 - 1  Gaziantep FK
+Onvo Antalyaspor  3 - 2  Sipay Bodrum FK
+Kasımpaşa  1 - 2  Bellona Kayserispor
+
+Hafta 13.
+Trabzonspor  5 - 0  Adana Demirspor
+Beşiktaş  2 - 4  Göztepe
+Tümosan Konyaspor  1 - 1  Atakaş Hatayspor
+Reeder Samsunspor  1 - 1  Corendon Alanyaspor
+Net Global Sivasspor  0 - 0  Kasımpaşa
+Sipay Bodrum FK  0 - 1  Galatasaray
+Gaziantep FK  3 - 0  Rams Başakşehir
+Bellona Kayserispor  2 - 6  Fenerbahçe
+ikas Eyüpspor  1 - 2  Çaykur Rizespor
+
+Hafta 14.
+Fenerbahçe  3 - 1  Gaziantep FK
+Atakaş Hatayspor  1 - 1  Beşiktaş
+Galatasaray  2 - 2  ikas Eyüpspor
+Çaykur Rizespor  3 - 0  Bellona Kayserispor
+Corendon Alanyaspor  2 - 1  Trabzonspor
+Rams Başakşehir  4 - 1  Göztepe
+Adana Demirspor  0 - 1  Tümosan Konyaspor
+Reeder Samsunspor  4 - 0  Sipay Bodrum FK
+Onvo Antalyaspor  2 - 1  Net Global Sivasspor
+
+Hafta 15.
+Gaziantep FK  1 - 0  Çaykur Rizespor
+Rams Başakşehir  3 - 0  Atakaş Hatayspor
+Bellona Kayserispor  2 - 0  Corendon Alanyaspor
+Net Global Sivasspor  2 - 3  Galatasaray
+ikas Eyüpspor  3 - 0  Reeder Samsunspor
+Beşiktaş  1 - 0  Fenerbahçe
+Göztepe  3 - 1  Adana Demirspor
+Tümosan Konyaspor  1 - 1  Onvo Antalyaspor
+Trabzonspor  2 - 2  Kasımpaşa
+
+Hafta 16.
+Galatasaray  4 - 3  Trabzonspor
+Adana Demirspor  2 - 1  Beşiktaş
+Fenerbahçe  3 - 1  Rams Başakşehir
+Onvo Antalyaspor  2 - 0  Bellona Kayserispor
+Atakaş Hatayspor  1 - 1  Göztepe
+Corendon Alanyaspor  3 - 0  Gaziantep FK
+Çaykur Rizespor  1 - 1  Tümosan Konyaspor
+Sipay Bodrum FK  2 - 0  Net Global Sivasspor
+Kasımpaşa  2 - 0  ikas Eyüpspor
+
+Hafta 17.
+Atakaş Hatayspor  1 - 3  Adana Demirspor
+Rams Başakşehir  2 - 2  Kasımpaşa
+Trabzonspor  1 - 0  Sipay Bodrum FK
+Göztepe  3 - 0  Çaykur Rizespor
+Bellona Kayserispor  1 - 5  Galatasaray
+Gaziantep FK  2 - 0  Onvo Antalyaspor
+Beşiktaş  1 - 1  Corendon Alanyaspor
+Net Global Sivasspor  0 - 0  Reeder Samsunspor
+ikas Eyüpspor  1 - 1  Fenerbahçe
+
+Hafta 18.
+Fenerbahçe  2 - 1  Atakaş Hatayspor
+Sipay Bodrum FK  1 - 1  Bellona Kayserispor
+Kasımpaşa  2 - 2  Gaziantep FK
+Reeder Samsunspor  2 - 1  Trabzonspor
+Galatasaray  2 - 1  Göztepe
+Onvo Antalyaspor  1 - 4  ikas Eyüpspor
+Adana Demirspor  0 - 1  Rams Başakşehir
+Corendon Alanyaspor  2 - 1  Tümosan Konyaspor
+Çaykur Rizespor  1 - 1  Beşiktaş
+
+Hafta 19.
+Göztepe  5 - 0  Kasımpaşa
+Tümosan Konyaspor  2 - 3  Fenerbahçe
+Gaziantep FK  1 - 0  Adana Demirspor
+Rams Başakşehir  1 - 2  Galatasaray
+Trabzonspor  5 - 0  Onvo Antalyaspor
+Net Global Sivasspor  1 - 1  Corendon Alanyaspor
+Beşiktaş  2 - 1  Sipay Bodrum FK
+Atakaş Hatayspor  1 - 2  Çaykur Rizespor
+Bellona Kayserispor  0 - 1  Reeder Samsunspor
+
+Hafta 20.
+Trabzonspor  4 - 0  Net Global Sivasspor
+Adana Demirspor  0 - 4  Fenerbahçe
+ikas Eyüpspor  3 - 0  Corendon Alanyaspor
+Tümosan Konyaspor  3 - 3  Kasımpaşa
+Göztepe  1 - 0  Onvo Antalyaspor
+Beşiktaş  0 - 0  Reeder Samsunspor
+Gaziantep FK  0 - 0  Sipay Bodrum FK
+Rams Başakşehir  2 - 0  Çaykur Rizespor
+Atakaş Hatayspor  1 - 1  Galatasaray
+
+Hafta 21.
+Kasımpaşa  5 - 4  Atakaş Hatayspor
+Fenerbahçe  3 - 2  Göztepe
+Onvo Antalyaspor  1 - 1  Beşiktaş
+Sipay Bodrum FK  0 - 1  ikas Eyüpspor
+Çaykur Rizespor  3 - 2  Adana Demirspor
+Galatasaray  1 - 0  Tümosan Konyaspor
+Corendon Alanyaspor  5 - 4  Rams Başakşehir
+Net Global Sivasspor  5 - 2  Bellona Kayserispor
+Reeder Samsunspor  2 - 1  Gaziantep FK
+
+Hafta 22.
+Gaziantep FK  0 - 1  Galatasaray
+Fenerbahçe  3 - 2  Çaykur Rizespor
+Göztepe  0 - 1  Corendon Alanyaspor
+Adana Demirspor  3 - 5  Kasımpaşa
+Rams Başakşehir  4 - 0  Reeder Samsunspor
+Bellona Kayserispor  0 - 0  Trabzonspor
+Atakaş Hatayspor  2 - 3  Onvo Antalyaspor
+ikas Eyüpspor  1 - 0  Net Global Sivasspor
+Tümosan Konyaspor  3 - 1  Sipay Bodrum FK
+
+Hafta 23.
+Sipay Bodrum FK  0 - 0  Göztepe
+Trabzonspor  1 - 0  ikas Eyüpspor
+Onvo Antalyaspor  0 - 0  Rams Başakşehir
+Galatasaray  3 - 0  Adana Demirspor
+Corendon Alanyaspor  0 - 2  Fenerbahçe
+Kasımpaşa  3 - 2  Çaykur Rizespor
+Net Global Sivasspor  0 - 2  Beşiktaş
+Bellona Kayserispor  3 - 2  Tümosan Konyaspor
+Reeder Samsunspor  2 - 0  Atakaş Hatayspor
+
+Hafta 24.
+Çaykur Rizespor  1 - 2  Galatasaray
+Fenerbahçe  3 - 1  Kasımpaşa
+ikas Eyüpspor  1 - 1  Bellona Kayserispor
+Tümosan Konyaspor  0 - 1  Reeder Samsunspor
+Atakaş Hatayspor  1 - 0  Corendon Alanyaspor
+Beşiktaş  2 - 1  Trabzonspor
+Rams Başakşehir  0 - 1  Sipay Bodrum FK
+Gaziantep FK  2 - 1  Net Global Sivasspor
+Adana Demirspor  1 - 1  Onvo Antalyaspor
+
+Hafta 25.
+Galatasaray  0 - 0  Fenerbahçe
+Trabzonspor  3 - 2  Gaziantep FK
+Corendon Alanyaspor  3 - 2  Adana Demirspor
+Bellona Kayserispor  1 - 0  Göztepe
+Reeder Samsunspor  2 - 3  Çaykur Rizespor
+Onvo Antalyaspor  2 - 1  Kasımpaşa
+Net Global Sivasspor  1 - 1  Tümosan Konyaspor
+Sipay Bodrum FK  1 - 0  Atakaş Hatayspor
+ikas Eyüpspor  1 - 3  Beşiktaş
+
+Hafta 26.
+Göztepe  2 - 2  Reeder Samsunspor
+Rams Başakşehir  1 - 0  Net Global Sivasspor
+Gaziantep FK  3 - 1  ikas Eyüpspor
+Tümosan Konyaspor  1 - 0  Trabzonspor
+Fenerbahçe  3 - 0  Onvo Antalyaspor
+Kasımpaşa  3 - 3  Galatasaray
+Çaykur Rizespor  3 - 1  Corendon Alanyaspor
+Beşiktaş  2 - 0  Bellona Kayserispor
+Adana Demirspor  0 - 0  Sipay Bodrum FK
+
+Hafta 27.
+Beşiktaş  1 - 2  Gaziantep FK
+Corendon Alanyaspor  1 - 2  Galatasaray
+ikas Eyüpspor  2 - 1  Tümosan Konyaspor
+Reeder Samsunspor  3 - 2  Adana Demirspor
+Net Global Sivasspor  3 - 1  Göztepe
+Trabzonspor  1 - 2  Atakaş Hatayspor
+Onvo Antalyaspor  2 - 1  Çaykur Rizespor
+Bellona Kayserispor  3 - 1  Rams Başakşehir
+Sipay Bodrum FK  1 - 0  Kasımpaşa
+
+Hafta 28.
+Fenerbahçe  0 - 0  Reeder Samsunspor
+Göztepe  1 - 1  ikas Eyüpspor
+Atakaş Hatayspor  3 - 2  Net Global Sivasspor
+Çaykur Rizespor  0 - 2  Sipay Bodrum FK
+Rams Başakşehir  0 - 3  Trabzonspor
+Tümosan Konyaspor  1 - 0  Beşiktaş
+Kasımpaşa  2 - 1  Corendon Alanyaspor
+Gaziantep FK  1 - 0  Bellona Kayserispor
+Galatasaray  4 - 0  Onvo Antalyaspor
+
+Hafta 29.
+ikas Eyüpspor  1 - 3  Rams Başakşehir
+Beşiktaş  2 - 1  Galatasaray
+Reeder Samsunspor  0 - 2  Kasımpaşa
+Trabzonspor  1 - 1  Göztepe
+Net Global Sivasspor  5 - 1  Adana Demirspor
+Sipay Bodrum FK  2 - 4  Fenerbahçe
+Tümosan Konyaspor  1 - 0  Gaziantep FK
+Onvo Antalyaspor  2 - 1  Corendon Alanyaspor
+Bellona Kayserispor  5 - 0  Atakaş Hatayspor

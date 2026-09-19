@@ -15,7 +15,7 @@
 				wrap = "on";
 			}
             container.innerHTML = "";
-			options = {
+			var options = {
 				value: content,
 				language: language,
 				theme: "vs",
@@ -55,6 +55,36 @@
 			})
 		})
 
+		function updateQuestionPreview() {
+			var preview = document.getElementById("question-preview");
+			if (preview && document.editors["editor-question"]) {
+				preview.innerHTML = document.editors["editor-question"].getValue();
+			}
+		}
+		if (document.editors["editor-question"]) {
+			document.editors["editor-question"].onDidChangeModelContent(updateQuestionPreview);
+			updateQuestionPreview();
+			requestAnimationFrame(function() {
+				try { document.editors["editor-question"].layout(); } catch (e) {}
+			});
+		}
+
+		window.setStatementView = function(mode) {
+			var split = document.getElementById("statement-split");
+			split.classList.remove("mode-code", "mode-preview");
+			if (mode === "code") split.classList.add("mode-code");
+			if (mode === "preview") {
+				split.classList.add("mode-preview");
+				updateQuestionPreview();
+			}
+			document.querySelectorAll("#statement-viewbar .view-btn").forEach(function(b) {
+				b.classList.toggle("active", b.getAttribute("data-mode") === mode);
+			});
+			requestAnimationFrame(function() {
+				try { document.editors["editor-question"].layout(); } catch (e) {}
+			});
+		};
+
 		monaco.editor.defineTheme("myTheme", {
 			base: "vs",
 			inherit: true,
@@ -79,7 +109,7 @@
 				}
 			],
 			colors: {
-				"editor.background": "#F9F7F7",
+				"editor.background": "#ffffff",
 			}
 		})
 		monaco.editor.setTheme("myTheme");
@@ -101,13 +131,25 @@
 			.editor_wrapper {
 				padding: 10px;
 				margin-top: 0px;
-				background-color: #f7f5f5;
+				background-color: #ffffff;
 			}
 
 			.editor {
 				width: 100%;
 				height: 400px;
 			}
+
+			.split { display: flex; gap: 10px; align-items: stretch; }
+			.split > .round { margin-top: 0; min-width: 0; }
+			.split-code { width: 50%; min-width: 0; box-sizing: border-box; }
+			.split-preview { width: 50%; min-width: 0; box-sizing: border-box; overflow: auto; max-height: 500px; background-color: #fff; }
+			.split.mode-code .split-preview { display: none; }
+			.split.mode-code .split-code { width: 100%; }
+			.split.mode-preview .split-code { display: none; }
+			.split.mode-preview .split-preview { width: 100%; }
+			.view-btn { font-size: 14px; padding: 6px 12px; margin-top: 0; }
+			.view-btn.active { background-color: #3F72AF; border-color: #3F72AF; }
+			.view-btn svg { display: block; }
 		</style>
 	</head>
 	<body>
@@ -127,8 +169,16 @@
 			<input style="font-size: 30px; padding: 10px; width: 100%;" type="text" name="title" id="title" placeholder="Title" value="{{title}}" required>
 		</div>
 		<p class="explanation">Question</p>
-		<div class="round editor_wrapper">
-			<div id="editor-question" class="editor editortype-html">{{question}}</div>
+		<div id="statement-viewbar" style="display: flex; gap: 8px; margin-bottom: 8px;">
+			<div class="button view-btn" data-mode="code" title="Code" onclick="setStatementView('code')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+			<div class="button view-btn" data-mode="preview" title="Preview" onclick="setStatementView('preview')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+			<div class="button view-btn active" data-mode="split" title="Side by side" onclick="setStatementView('split')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
+		</div>
+		<div class="split" id="statement-split">
+			<div class="round editor_wrapper split-code">
+				<div id="editor-question" class="editor editortype-html">{{question}}</div>
+			</div>
+			<div class="round split-preview" id="question-preview"></div>
 		</div>
 
 		<p class="explanation">Pre-solution</p>
@@ -178,27 +228,27 @@
 			<div id="testcasepairs">
 				<div id="testcaseonly_yedektestcasepair" style="display: flex; width: 100%;">
 					<div class="round" style="width: 100%; margin: 20px;">
-						<textarea style="width: 100%;" rows="10" placeholder="Sample Input" id="output"></textarea>
+						<textarea style="width: 100%;" rows="10" placeholder="Sample Input"></textarea>
 					</div>
 					<div class="round" style="width: 100%; margin: 20px;">
-						<textarea style="width: 100%;" rows="10" placeholder="Expected output" id="output"></textarea>
+						<textarea style="width: 100%;" rows="10" placeholder="Expected output"></textarea>
 					</div>
 					<div class="round" style="width: 10%; margin: 20px;">
 						<input style="height: 40%; width: 30px;" type="checkbox">
-						<div class="button" sytle="height: 40%;" onclick="remove_testcase(this)">-</div>
+						<div class="button" style="height: 40%;" onclick="remove_testcase(this)">-</div>
 					</div>
 				</div>
 <!-- testcaseonly_testcasepair -->
 				<div class="testcasepair" style="display: flex; width: 100%;">
 					<div class="round" style="width: 100%; margin: 20px;">
-						<textarea style="width: 100%;" rows="10" placeholder="Sample Input" id="output">{{testcaseonly_input}}</textarea>
+						<textarea style="width: 100%;" rows="10" placeholder="Sample Input">{{testcaseonly_input}}</textarea>
 					</div>
 					<div class="round" style="width: 100%; margin: 20px;">
-						<textarea style="width: 100%;" rows="10" placeholder="Expected output" id="output">{{testcaseonly_output}}</textarea>
+						<textarea style="width: 100%;" rows="10" placeholder="Expected output">{{testcaseonly_output}}</textarea>
 					</div>
 					<div class="round" style="width: 10%; margin: 20px;">
 						<input style="height: 40%; width: 30px;" {{testcaseonly_show}} type="checkbox">
-						<div class="button" sytle="height: 40%;" onclick="remove_testcase(this)">-</div>
+						<div class="button" style="height: 40%;" onclick="remove_testcase(this)">-</div>
 					</div>
 				</div>
 <!-- testcaseonly_testcasepair end -->
@@ -211,7 +261,7 @@
 					var testcasepairs = document.getElementById("testcasepairs");
 					var newpair = testcasepair.cloneNode(true);
 					newpair.style.display = "flex";
-					newpair.class = "testcasepair";
+					newpair.className = "testcasepair";
 					testcasepairs.appendChild(newpair);
 				}
 				function remove_testcase(obj) {
@@ -233,7 +283,7 @@
 					<textarea style="width: 100%;" rows="10" placeholder="Expected output"></textarea>
 				</div>
 				<div class="round" style="width: 10%; margin: 20px;">
-					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
+					<div class="button" style="height: 40%;" onclick="remove_testcase2(this)">-</div>
 				</div>
 			</div>
 		<p class="explanation">Testcase Generator</p>
@@ -254,7 +304,7 @@
 			<div class="button" onclick="addsampletestcase()"> Add Sample Testcase </div>
 			<div id="solution_testcasepairs">
 <!-- solution_testcasepair -->
-			<div id="yedektestcasepair" style="display: flex; width: 100%;">
+			<div class="testcasepair" style="display: flex; width: 100%;">
 				<div class="round" style="width: 100%; margin: 20px;">
 					<textarea style="width: 100%;" rows="10" placeholder="Sample Input">{{solution_sampleinput}}</textarea>
 				</div>
@@ -262,7 +312,7 @@
 					<textarea style="width: 100%;" rows="10" placeholder="Expected output">{{solution_sampleoutput}}</textarea>
 				</div>
 				<div class="round" style="width: 10%; margin: 20px;">
-					<div class="button" sytle="height: 40%;" onclick="remove_testcase2(this)">-</div>
+					<div class="button" style="height: 40%;" onclick="remove_testcase2(this)">-</div>
 				</div>
 			</div>
 <!-- solution_testcasepair end -->
@@ -331,7 +381,7 @@
 				}
 
 				function remove_testcase2(obj) {
-					rem = obj.parentNode.parentNode.remove();
+					var rem = obj.parentNode.parentNode.remove();
 				}
 			</script>
 		</div>
@@ -359,7 +409,7 @@
 					<pre id="guessinput_output" style="width: 100%;" placeholder="Output">{{guessinput_output}}</pre>
 				</div>
 				<div class="round" style="width: 10%; margin: 20px;">
-					<div class="button" sytle="height: 40%;" onclick="gi_generate_output()">⟲</div>
+					<div class="button" style="height: 40%;" onclick="gi_generate_output()">⟲</div>
 				</div>
 			</div>
 			<script>
@@ -403,7 +453,7 @@
 		</div>
 
 		<div class="round">
-			<input id="order" type="number" name="order" value="{{order}}" placeholder="Order" required>
+			<input id="tags" type="text" name="tags" value="{{tags}}" placeholder="Tags, comma separated" style="width: 100%; font-size: 18px;">
 		</div>
 
 		<select class="round" style="width: 100%" id="section_select">
@@ -465,7 +515,7 @@
 			var type = judge.value;
 			var section = document.getElementById("section_select").value;
 			var points = Number(document.getElementById("points").value);
-			var order = Number(document.getElementById("order").value);
+			var tags = document.getElementById("tags").value.split(",").map(function(t) { return t.trim(); }).filter(function(t) { return t; });
 
 			var question = {
 				id: id,
@@ -479,14 +529,14 @@
 				type: type,
 				section: section,
 				points: points,
-				order: order
+				tags: tags
 			}
 
 			if (type == "outputonly") {
 				var output = document.getElementById("output").value;
 				question["output"] = output;
 			} else if (type == "testcaseonly") {
-				pairs = document.getElementById("testcasepairs");
+				var pairs = document.getElementById("testcasepairs");
 				question["testcases"] = [];
 				for (var i = 1; i < pairs.children.length; i++) {
 					var sampleinput = pairs.children[i].children[0].children[0].value;
@@ -498,7 +548,7 @@
 				var generator = document.editors["editor-solution-generator"].getValue();
 				question["generator"] = generator;
 
-				pairs = document.getElementById("solution_testcasepairs");
+				var pairs = document.getElementById("solution_testcasepairs");
 				question["testcases"] = [];
 				for (var i = 0; i < pairs.children.length; i++) {
 					var sampleinput = pairs.children[i].children[0].children[0].value;

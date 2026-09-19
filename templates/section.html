@@ -3,20 +3,20 @@
 	<head>
 		<title>İşte İsar</title>
 		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+		<style>
+			.done {
+				background-color: #44CF6C;
+			}
+
+			.partiallydone {
+				background-color: #cec929;
+			}
+
+			.notdone {
+				background-color: #DBE2EE;
+			}
+		</style>
 	</head>
-<style>
-.done {
-	background-color: #44CF6C;
-}
-
-.partiallydone {
-	background-color: #cec929;
-}
-
-.notdone {
-	background-color: #DBE2EE;
-}
-</style>
 	<body>
 	<div class="topnav">
 		<a href="/">Home</a>
@@ -29,7 +29,6 @@
 		<a href="/scoreboard">Scoreboard</a>
 		<a class="right" href="/login">{{current_user}}</a>
 	</div>
-	</body>
 	<div style="display: flex; flex-flow: row wrap;">
 <!-- question -->
 	<div class="round {{done}}" style="width: 35%; margin: 5%; text-align: center; cursor: pointer;" onclick="window.location.href = '/{{type}}/{{id}}'">{{title}}</div>
@@ -66,5 +65,6 @@
 		window.history.replaceState({historic  : true}, '');
 	}
 </script>
+	</body>
 </html>
 

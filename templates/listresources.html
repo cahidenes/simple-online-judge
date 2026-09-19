@@ -1,7 +1,27 @@
 <html>
 	<head>
 		<title>İşte İsar</title>
-		<link rel="stylesheet" type="text/css" href="static/mystyle.css">
+		<link rel="stylesheet" type="text/css" href="/static/mystyle.css">
+		<style>
+			.toolbar { padding: 20px 30px 0 30px; display: flex; gap: 10px; align-items: flex-start; }
+			.toolbar input[type="text"] { width: 100%; font-size: 18px; padding: 10px; }
+			#tagbar { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+			#tagbar:empty { display: none; }
+			.tagpill { border: 2px solid #112D4E; border-radius: 20px; padding: 2px 12px; font-size: 14px; cursor: pointer; background: #DBE2EF; font-family: monospace; }
+			.tagpill.active { background: #112D4E; color: #fff; }
+			#orderstatus { font-size: 14px; font-family: monospace; margin-top: 8px; }
+			#orderstatus:empty { display: none; }
+			#qlist { display: flex; flex-direction: column; padding: 10px 30px 30px 30px; }
+			.item-row { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 6px 12px; box-sizing: border-box; }
+			.item-row.dragging { opacity: 0.5; }
+			.item-row.dragover { border-color: #44CF6C; }
+			.drag-handle { cursor: grab; font-size: 18px; user-select: none; padding: 0 5px; }
+			.item-main { flex: 1; min-width: 0; }
+			.item-title { font-size: 16px; font-weight: bold; }
+			.item-tags { font-size: 12px; font-family: monospace; color: #112D4E; margin-left: auto; text-align: right; white-space: nowrap; }
+			.item-actions { display: flex; gap: 8px; }
+			.item-actions .button { font-size: 13px; margin-top: 0; padding: 6px 10px; }
+		</style>
 	</head>
 	<body>
 	<div class="topnav">
@@ -15,24 +35,29 @@
 		<a href="/scoreboard">Scoreboard</a>
 		<a class="right" href="/login">{{current_user}}</a>
 	</div>
-	<div style="display: flex; flex-flow: row wrap;">
+	<div class="toolbar">
+		<div class="round" style="padding: 10px 15px; flex: 1;">
+			<input type="text" id="search" placeholder="Search resources (title, tags)...">
+			<div id="tagbar"></div>
+			<div id="orderstatus"></div>
+		</div>
+		<div class="button" style="width: 200px; flex-shrink: 0;" onclick="window.location.href = 'addresource'">Add Resource</div>
+	</div>
+	<div id="qlist">
 <!-- resource -->
-		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
-			<h1 class="hcenter" style="font-size: 20px"> {{title}} </h1>
-			<p style="font-size: 16px;" class="hcenter"><i>Order: {{order}}</i></p>
-			<p style="font-size: 16px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical"> {{text}} </p>
-			<div style="display: flex;">
-				<div class="button" style="font-size: 16px;margin-right: 5%; width: 45%;" onclick="editResource('{{id}}')">Edit</div>
-				<div class="button" style="font-size: 16px;width: 45%;" onclick="deleteResource('{{title}}', '{{id}}')">Delete</div>
+		<div class="round item-row" draggable="true" data-id="{{id}}" data-tags="{{tags_attr}}">
+			<span class="drag-handle" title="Drag to reorder">☰</span>
+			<div class="item-main">
+				<div class="item-title">{{title}}</div>
+			</div>
+			<div class="item-tags">{{tags}}</div>
+			<div class="item-actions">
+				<div class="button" onclick="editResource('{{id}}')">Edit</div>
+				<div class="button" onclick="deleteResource('{{title}}', '{{id}}')">Delete</div>
 			</div>
 		</div>
 <!-- resource end -->
-		<div class="hcenter round" style="margin-top: 10px; width: 28%;">
-			<div class="button" style="width: 90%; height: 80%; align-items: center; display: flex" onclick="window.location.href = 'addresource'">
-			Add Resource
-			</div>
-		</div>
-		</div>
+	</div>
 	</body>
 	<script>
 		function editResource(id) {
@@ -54,5 +79,124 @@
 				})
 			}
 		}
+
+		var list = document.getElementById("qlist");
+		var searchInput = document.getElementById("search");
+		var tagbar = document.getElementById("tagbar");
+		var status = document.getElementById("orderstatus");
+		var activeTag = "";
+		var dragged = null;
+		var startSnapshot = null;
+
+		function snapshot() {
+			var parts = [];
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				parts.push(row.getAttribute("data-id"));
+			});
+			return parts.join("|");
+		}
+
+		function applyFilter() {
+			var q = searchInput.value.toLowerCase();
+			var rows = list.querySelectorAll(".item-row");
+			rows.forEach(function(row) {
+				var tags = (row.getAttribute("data-tags") || "").toLowerCase();
+				var tagOk = !activeTag || tags.split(",").map(function(t) { return t.trim(); }).indexOf(activeTag) !== -1;
+				var textOk = !q || row.innerText.toLowerCase().indexOf(q) !== -1;
+				row.style.display = (tagOk && textOk) ? "" : "none";
+			});
+			var filtering = q || activeTag;
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				row.draggable = !filtering;
+			});
+		}
+
+		function buildTagbar() {
+			var tagset = {};
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				(row.getAttribute("data-tags") || "").split(",").forEach(function(t) {
+					t = t.trim();
+					if (t) tagset[t.toLowerCase()] = t;
+				});
+			});
+			tagbar.innerHTML = "";
+			Object.keys(tagset).sort().forEach(function(key) {
+				var pill = document.createElement("span");
+				pill.className = "tagpill";
+				pill.innerText = tagset[key];
+				pill.onclick = function() {
+					if (activeTag === key) {
+						activeTag = "";
+						pill.classList.remove("active");
+					} else {
+						activeTag = key;
+						tagbar.querySelectorAll(".tagpill").forEach(function(p) { p.classList.remove("active"); });
+						pill.classList.add("active");
+					}
+					applyFilter();
+				};
+				tagbar.appendChild(pill);
+			});
+		}
+
+		searchInput.addEventListener("input", applyFilter);
+
+		list.querySelectorAll(".item-row").forEach(function(row) {
+			row.addEventListener("dragstart", function(e) {
+				if (!row.draggable) { e.preventDefault(); return; }
+				dragged = row;
+				startSnapshot = snapshot();
+				row.classList.add("dragging");
+				e.dataTransfer.effectAllowed = "move";
+				try { e.dataTransfer.setData("text/plain", row.getAttribute("data-id")); } catch (err) {}
+			});
+			row.addEventListener("dragend", function() {
+				row.classList.remove("dragging");
+				list.querySelectorAll(".item-row").forEach(function(r) { r.classList.remove("dragover"); });
+				if (dragged === row && startSnapshot !== null && snapshot() !== startSnapshot) {
+					saveOrder();
+				}
+				if (dragged === row) { dragged = null; startSnapshot = null; }
+			});
+			row.addEventListener("dragover", function(e) {
+				if (!dragged || dragged === row) return;
+				e.preventDefault();
+				row.classList.add("dragover");
+				var rect = row.getBoundingClientRect();
+				var after = (e.clientY - rect.top) > rect.height / 2;
+				if (after) {
+					list.insertBefore(dragged, row.nextSibling);
+				} else {
+					list.insertBefore(dragged, row);
+				}
+			});
+			row.addEventListener("dragleave", function() {
+				row.classList.remove("dragover");
+			});
+			row.addEventListener("drop", function(e) {
+				e.preventDefault();
+				row.classList.remove("dragover");
+			});
+		});
+
+		function saveOrder() {
+			var ids = [];
+			list.querySelectorAll(".item-row").forEach(function(row) {
+				ids.push(row.getAttribute("data-id"));
+			});
+			status.innerText = "Saving order...";
+			fetch("/saveresourcesorder", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ order: ids })
+			}).then(function(r) { return r.json(); }).then(function(data) {
+				status.innerText = data.success ? "Order saved." : "Save failed.";
+			}).catch(function() {
+				status.innerText = "Save failed.";
+			});
+		}
+
+		buildTagbar();
+		applyFilter();
 	</script>
 </html>

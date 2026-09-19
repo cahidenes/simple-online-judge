@@ -41,9 +41,6 @@
 
         #question {
             padding: 50px;
-                        padding-bottom: 0;
-                        font-size: 20px;
-                        padding-bottom: 0;
                         font-size: 20px;
                         -webkit-touch-callout: none;
                         -webkit-user-select: none;
@@ -169,7 +166,7 @@
 		function createEditor(container, language) {
             var content = container.textContent;
             container.innerHTML = "";
-			options = {
+			var options = {
 				value: content,
 				language: language,
 				theme: "vs",
