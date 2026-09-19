@@ -1,6 +1,6 @@
 {
     "admin": {
-        "password": "adminbuya",
+        "password": "admin",
         "name": "Admin",
         "visible": false,
         "solves": {
