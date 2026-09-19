@@ -9,14 +9,13 @@ from the web UI.
 ## Quick start
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/cahidenes/simple-online-judge.git
 cd simple-online-judge
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 sh run.sh
 # open http://localhost:8080
-# login with admin / admin (change immediately, see below)
 ```
 
 > **WARNING: change the admin password after install.**
