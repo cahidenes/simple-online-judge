@@ -15,7 +15,6 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 sh run.sh
-# open http://localhost:8080
 ```
 
 > **WARNING: change the admin password after install.**
