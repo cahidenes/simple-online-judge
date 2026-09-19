@@ -43,12 +43,9 @@ Input
 
 		</div>
 
-		<select class="round" style="width: 100%" id="section_select">
-			<option value="default" selected> - </option>
-<!-- section_option -->
-<option value="{{value}}" {{selected}}> {{name}} </option>
-<!-- section_option end -->
-		</select>
+		<div class="round">
+			<input id="order" type="number" name="order" value="{{order}}" placeholder="Order" required style="width: 100%; font-size: 22px;">
+		</div>
 
 		<div class="button" onclick="addquestion('-1')" {{add_hidden}}> Add Resource </div>
 		<div class="button" onclick="addquestion('{{id}}')" {{save_hidden}}> Save </div>
@@ -59,13 +56,13 @@ Input
 
 			var title = document.getElementById("title").value;
 			var text = document.getElementById("text").value;
-			var section = document.getElementById("section_select").value;
+			var order = Number(document.getElementById("order").value);
 
 			var question = {
 				id: id,
 				title: title,
 				text: text,
-				section: section
+				order: order
 			}
 			fetch("/addresource", {
 				method: "POST",

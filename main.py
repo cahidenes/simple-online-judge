@@ -66,6 +66,9 @@ def save_sections():
 
 with open(DATA_DIR + 'resources.json') as f:
     resources = json.load(f)
+    for resource in resources.values():
+        if 'order' not in resource:
+            resource['order'] = 0
 def save_resources():
     with open(DATA_DIR + 'resources.json', 'w') as f:
         json.dump(resources, f)
@@ -113,7 +116,24 @@ def home(request: Request):
 
 @app.get('/resources')
 def get_resources(request: Request):
-    return get_sections(request, 'resources')
+    if handle_user(request):
+        return handle_user(request)
+    user = request.cookies.get('username')
+
+    with open('templates/section.html') as f:
+        content = f.read()
+    content = replace_keywords(content, current_user=user)
+    content = replace_keywords(content, type='resource')
+
+    question_template, before, after = get_group(content, 'question')
+
+    sorted_resources = sorted(resources.items(), key=lambda x: x[1].get('order', 0))
+    for resource_id, resource in sorted_resources:
+        before += replace_keywords(question_template, id=resource_id, title=resource['title'], done='notdone')
+
+    content = before + after
+
+    return HTMLResponse(content=content)
 
 def get_sections(request: Request, type):
     if handle_user(request):
@@ -482,16 +502,10 @@ def addresource(request: Request):
     with open('templates/addresource.html') as f:
         content = f.read()
     content = replace_keywords(content,
+                               current_user=user,
+                               order=0,
                                save_hidden="hidden")
-    section_option, before, after = get_group(content, 'section_option')
-    for sectionid, section in sections.items():
-        if not section['resource']:
-            continue
-        before += replace_keywords(section_option,
-                                   value=sectionid,
-                                   name=section['title'],
-                                   selected='')
-    content = remove_templates(before + after)
+    content = remove_templates(content)
     return HTMLResponse(content=content)
 
 @app.get('/editresource/{resource_id}')
@@ -511,17 +525,10 @@ def editresource(request: Request, resource_id: str):
                                title=resource['title'],
                                text=resource['text'],
                                id=resource_id,
+                               order=resource.get('order', 0),
                                add_hidden='hidden')
 
-    section_option, before, after = get_group(content, 'section_option')
-    for sectionid, section in sections.items():
-        if not section['resource']:
-            continue
-        before += replace_keywords(section_option,
-                                   value=sectionid,
-                                   name=section['title'],
-                                   selected='selected' if sectionid == resource['section'] else '')
-    content = remove_templates(before + after)
+    content = remove_templates(content)
 
     return HTMLResponse(content=content)
 
@@ -539,6 +546,10 @@ def addresourcepost(request: Request, resource: Any = Body(None)):
         resource['id'] = id
     else:
         id = resource['id']
+    try:
+        resource['order'] = int(resource.get('order', 0))
+    except (ValueError, TypeError):
+        resource['order'] = 0
     resources[id] = resource
 
     save_resources()
@@ -555,13 +566,13 @@ def listresources(request: Request):
         content = f.read()
     content = replace_keywords(content, current_user=user)
     resource_template, before, after = get_group(content, 'resource')
-    for id in resources:
-        resource = resources[id]
+    sorted_resources = sorted(resources.items(), key=lambda x: x[1].get('order', 0))
+    for id, resource in sorted_resources:
         resource_content = replace_keywords(resource_template,
                                             id=id,
                                             title=resource['title'],
                                             text=resource['text'],
-                                            section='-' if resource['section'] in ['-', 'default'] else (sections[resource['section']]['title'] if resource['section'] in sections else 'Deleted Section'))
+                                            order=resource.get('order', 0))
         before += resource_content
     content = before + after
     return HTMLResponse(content=content)
@@ -584,10 +595,9 @@ def get_resource(request: Request, resource_id: str):
         return handle_user(request)
     user = request.cookies.get('username')
 
+    if resource_id not in resources:
+        return RedirectResponse('/resources')
     resource = resources[resource_id]
-    section = sections[resource['section']]
-    if not section['active'] or not section['visible']:
-        return RedirectResponse('/')
 
     with open('templates/resource.html') as f:
         content = f.read()
@@ -732,30 +742,23 @@ def getsection(request: Request, section_id: str):
             return RedirectResponse('/')
     
     if sections[section_id]['resource']:
-        content = replace_keywords(content, type='resource')
-    else:
-        content = replace_keywords(content, type='question')
+        return RedirectResponse('/resources')
+    content = replace_keywords(content, type='question')
 
     question_template, before, after = get_group(content, 'question')
 
-    if sections[section_id]['resource']:
-        for resource_id in resources:
-            if resources[resource_id]['section'] != section_id:
-                continue
-            before += replace_keywords(question_template, id=resource_id, title=resources[resource_id]['title'], done='notdone')
-    else:
-        sorted_questions = sorted(questions.items(), key=lambda x: x[1]['order'])
-        for question_id, _ in sorted_questions:
-            if questions[question_id]['section'] != section_id:
-                continue
-            done = 'notdone'
-            if question_id in users[user]['solves']:
-                if users[user]['solves'][question_id]['points'] > 0:
-                    done = 'partiallydone'
-                if users[user]['solves'][question_id]['points'] == questions[question_id]['points']:
-                    done = 'done'
+    sorted_questions = sorted(questions.items(), key=lambda x: x[1].get('order', 0))
+    for question_id, _ in sorted_questions:
+        if questions[question_id]['section'] != section_id:
+            continue
+        done = 'notdone'
+        if question_id in users[user]['solves']:
+            if users[user]['solves'][question_id]['points'] > 0:
+                done = 'partiallydone'
+            if users[user]['solves'][question_id]['points'] == questions[question_id]['points']:
+                done = 'done'
 
-            before += replace_keywords(question_template, id=question_id, title=questions[question_id]['title'], done=done)
+        before += replace_keywords(question_template, id=question_id, title=questions[question_id]['title'], done=done)
 
     content = before + after
 
